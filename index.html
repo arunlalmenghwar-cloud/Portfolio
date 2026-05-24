@@ -1,0 +1,1663 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Arun Lal | Portfolio & Daily Hub</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,700;0,9..144,900;1,9..144,300&display=swap" rel="stylesheet"/>
+<script>
+  tailwind.config = {
+    darkMode:'class',
+    theme:{
+      extend:{
+        colors:{
+          navy:{400:'#60a5fa',500:'#3b82f6',600:'#2563eb',700:'#1d4ed8',800:'#1e40af',900:'#1e3a8a'},
+          slate:{800:'#1e293b',900:'#0f172a',950:'#020617'}
+        }
+      }
+    }
+  }
+</script>
+<style>
+/* ─── RESET & BASE ─────────────────────────────────────────── */
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg-void:#050810;
+  --bg-deep:#070c18;
+  --bg-surface:rgba(10,15,30,0.85);
+  --bg-card:rgba(12,18,35,0.9);
+  --border:rgba(255,255,255,0.06);
+  --border-hover:rgba(96,165,250,0.35);
+  --accent:#4f8ef7;
+  --accent-bright:#60a5fa;
+  --accent-glow:rgba(79,142,247,0.4);
+  --gold:#c9a84c;
+  --gold-glow:rgba(201,168,76,0.3);
+  --text-primary:#f0f4ff;
+  --text-secondary:#8899bb;
+  --text-muted:#3d4f6e;
+}
+html{scroll-behavior:smooth;}
+body{
+  font-family:'Outfit',sans-serif;
+  background:var(--bg-void);
+  color:var(--text-primary);
+  overflow-x:hidden;
+  cursor:none;
+}
+h1,h2,h3,h4{font-family:'Fraunces',serif;}
+
+/* ─── CUSTOM CURSOR ─────────────────────────────────────────── */
+#cursor-dot{
+  position:fixed;top:0;left:0;width:6px;height:6px;
+  background:var(--accent-bright);border-radius:50%;
+  pointer-events:none;z-index:9999;
+  transform:translate(-50%,-50%);
+  transition:transform 0.05s,opacity 0.3s;
+  mix-blend-mode:screen;
+}
+#cursor-ring{
+  position:fixed;top:0;left:0;width:32px;height:32px;
+  border:1.5px solid var(--accent);border-radius:50%;
+  pointer-events:none;z-index:9998;
+  transform:translate(-50%,-50%);
+  transition:transform 0.15s cubic-bezier(0.23,1,0.32,1),width 0.25s,height 0.25s,border-color 0.25s,opacity 0.3s;
+  opacity:0.7;
+}
+body.hovering #cursor-ring{width:52px;height:52px;border-color:var(--accent-bright);opacity:1;}
+body.clicking #cursor-dot{transform:translate(-50%,-50%) scale(2.5);}
+
+/* ─── SCROLLBAR ─────────────────────────────────────────────── */
+::-webkit-scrollbar{width:4px;}
+::-webkit-scrollbar-track{background:var(--bg-void);}
+::-webkit-scrollbar-thumb{background:linear-gradient(var(--accent),var(--gold));border-radius:2px;}
+
+/* ─── ANIMATED MESH BACKGROUND ─────────────────────────────── */
+#bg-canvas{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:0.55;}
+
+/* ─── GRID OVERLAY ──────────────────────────────────────────── */
+body::before{
+  content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:
+    linear-gradient(rgba(79,142,247,.025) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(79,142,247,.025) 1px,transparent 1px);
+  background-size:80px 80px;
+}
+/* ─── NOISE TEXTURE ─────────────────────────────────────────── */
+body::after{
+  content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  opacity:.025;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+}
+
+/* ─── SECTIONS ──────────────────────────────────────────────── */
+.section{display:none;position:relative;z-index:1;animation:fadeUp .5s cubic-bezier(0.22,1,0.36,1);}
+.section.active{display:block;}
+
+/* ─── NAVBAR ────────────────────────────────────────────────── */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:50;
+  height:64px;
+  background:rgba(5,8,16,0.8);
+  backdrop-filter:blur(20px) saturate(180%);
+  -webkit-backdrop-filter:blur(20px) saturate(180%);
+  border-bottom:1px solid var(--border);
+  transition:background 0.4s;
+}
+nav.scrolled{background:rgba(5,8,16,0.97);box-shadow:0 4px 40px rgba(0,0,0,0.6);}
+.nav-logo{font-family:'Fraunces',serif;font-size:1.3rem;font-weight:900;letter-spacing:-0.04em;}
+.nav-logo .accent{color:var(--accent-bright);}
+.nav-btn{
+  position:relative;padding:6px 14px;border-radius:8px;
+  font-size:13px;font-weight:600;color:var(--text-secondary);
+  transition:color 0.25s;letter-spacing:0.02em;
+}
+.nav-btn::after{
+  content:'';position:absolute;bottom:-2px;left:50%;right:50%;
+  height:2px;background:linear-gradient(90deg,var(--accent),var(--accent-bright));
+  border-radius:2px;transition:left 0.3s cubic-bezier(0.22,1,0.36,1),right 0.3s cubic-bezier(0.22,1,0.36,1);
+}
+.nav-btn:hover{color:var(--accent-bright);}
+.nav-btn.active{color:var(--accent-bright);}
+.nav-btn.active::after{left:14px;right:14px;}
+.nav-cta{
+  padding:7px 18px;border-radius:10px;font-size:13px;font-weight:700;
+  background:linear-gradient(135deg,#1d4ed8,#4f8ef7);color:#fff;
+  border:1px solid rgba(96,165,250,0.25);
+  box-shadow:0 0 20px rgba(79,142,247,0.2);
+  transition:all 0.25s;
+}
+.nav-cta:hover{box-shadow:0 0 30px rgba(79,142,247,0.45);transform:translateY(-1px);}
+
+/* ─── HERO ──────────────────────────────────────────────────── */
+.hero-section{
+  min-height:100vh;display:flex;align-items:center;justify-content:center;
+  padding:0 1rem;position:relative;overflow:hidden;
+}
+.hero-orb{
+  position:absolute;border-radius:50%;filter:blur(80px);pointer-events:none;
+}
+.orb-1{width:600px;height:600px;background:radial-gradient(circle,rgba(29,78,216,0.15),transparent 70%);top:-200px;left:-200px;animation:orbFloat 20s ease-in-out infinite;}
+.orb-2{width:400px;height:400px;background:radial-gradient(circle,rgba(79,142,247,0.1),transparent 70%);bottom:-100px;right:-100px;animation:orbFloat 15s ease-in-out infinite reverse;}
+.orb-3{width:300px;height:300px;background:radial-gradient(circle,rgba(201,168,76,0.06),transparent 70%);top:30%;left:60%;animation:orbFloat 25s ease-in-out infinite 5s;}
+
+/* ─── AVATAR ────────────────────────────────────────────────── */
+.avatar-wrap{
+  position:relative;display:inline-block;
+}
+.avatar-ring-outer{
+  width:260px;height:260px;border-radius:50%;
+  background:conic-gradient(from 0deg,transparent 0deg,var(--accent) 60deg,var(--gold) 120deg,transparent 180deg,var(--accent-bright) 240deg,transparent 300deg,transparent 360deg);
+  padding:2px;
+  filter:drop-shadow(0 0 16px var(--accent-glow));
+}
+.avatar-ring-inner{
+  width:100%;height:100%;border-radius:50%;
+  background:var(--bg-void);
+  padding:4px;
+}
+.avatar-img-wrap{
+  width:100%;height:100%;border-radius:50%;overflow:hidden;
+  background:linear-gradient(135deg,#0f172a,#1e293b);
+  display:flex;align-items:center;justify-content:center;
+  position:relative;
+}
+
+/* ─── STATUS BADGE ──────────────────────────────────────────── */
+.status-badge{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:6px 16px;border-radius:100px;
+  background:rgba(79,142,247,0.08);
+  border:1px solid rgba(79,142,247,0.2);
+  font-size:12px;font-weight:700;
+  letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent-bright);
+}
+.status-pulse{
+  width:7px;height:7px;border-radius:50%;background:#22c55e;
+  box-shadow:0 0 0 0 rgba(34,197,94,0.4);
+  animation:statusPulse 2s ease-in-out infinite;
+}
+
+/* ─── HERO TITLE ────────────────────────────────────────────── */
+.hero-title{
+  font-size:clamp(3.5rem,10vw,7rem);
+  font-weight:900;
+  letter-spacing:-0.04em;
+  line-height:0.95;
+  color:var(--text-primary);
+}
+.hero-title .word-accent{
+  -webkit-text-fill-color:transparent;
+  -webkit-background-clip:text;
+  background-clip:text;
+  background-image:linear-gradient(135deg,var(--accent-bright) 0%,#a78bfa 50%,var(--gold) 100%);
+  background-size:200% 200%;
+  animation:gradShift 6s ease infinite;
+}
+
+/* ─── CARDS ─────────────────────────────────────────────────── */
+.card{
+  background:var(--bg-card);
+  border:1px solid var(--border);
+  border-radius:16px;
+  backdrop-filter:blur(12px);
+  transition:transform 0.35s cubic-bezier(0.22,1,0.36,1),
+             box-shadow 0.35s,
+             border-color 0.35s;
+  position:relative;overflow:hidden;
+}
+.card::before{
+  content:'';position:absolute;inset:0;border-radius:inherit;
+  background:radial-gradient(600px circle at var(--mouse-x,50%) var(--mouse-y,50%),rgba(79,142,247,0.04),transparent 40%);
+  opacity:0;transition:opacity 0.4s;pointer-events:none;z-index:0;
+}
+.card:hover::before{opacity:1;}
+.card:hover{
+  transform:translateY(-5px) scale(1.005);
+  box-shadow:0 20px 60px rgba(0,0,0,0.5),0 0 0 1px rgba(79,142,247,0.15),0 8px 24px rgba(79,142,247,0.08);
+  border-color:rgba(79,142,247,0.2);
+}
+.card > *{position:relative;z-index:1;}
+
+/* ─── SECTION HEADINGS ──────────────────────────────────────── */
+.section-heading{
+  font-family:'Fraunces',serif;
+  font-weight:900;letter-spacing:-0.03em;
+  position:relative;display:inline-block;
+}
+.section-heading .hl{
+  -webkit-text-fill-color:transparent;
+  -webkit-background-clip:text;background-clip:text;
+  background-image:linear-gradient(135deg,var(--accent-bright),#a78bfa);
+}
+.heading-line{
+  display:block;width:48px;height:3px;margin-top:10px;
+  background:linear-gradient(90deg,var(--accent),transparent);
+  border-radius:2px;
+}
+
+/* ─── SKILL LEVEL BADGES ─────────────────────────────────────── */
+.level-badge{
+  padding:2px 10px;border-radius:100px;font-size:10px;font-weight:700;
+  text-transform:uppercase;letter-spacing:0.08em;border:1px solid;
+}
+
+/* ─── TECH TAGS ─────────────────────────────────────────────── */
+.tech-tag{
+  display:inline-block;padding:3px 10px;
+  background:rgba(79,142,247,0.06);border:1px solid rgba(79,142,247,0.15);
+  border-radius:100px;font-size:10px;font-weight:600;color:var(--text-secondary);
+  transition:all 0.2s;letter-spacing:0.03em;
+}
+.tech-tag.matched{border-color:var(--accent);color:var(--accent-bright);background:rgba(79,142,247,0.12);}
+
+/* ─── GLOW BUTTONS ──────────────────────────────────────────── */
+.btn-primary{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:12px 28px;border-radius:12px;font-weight:700;font-size:14px;
+  background:linear-gradient(135deg,#1d4ed8,#4f8ef7);
+  color:#fff;border:none;
+  box-shadow:0 4px 24px rgba(79,142,247,0.3),inset 0 1px 0 rgba(255,255,255,0.1);
+  transition:all 0.25s;cursor:pointer;
+}
+.btn-primary:hover{
+  transform:translateY(-2px);
+  box-shadow:0 8px 32px rgba(79,142,247,0.5),inset 0 1px 0 rgba(255,255,255,0.15);
+}
+.btn-outline{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:11px 28px;border-radius:12px;font-weight:700;font-size:14px;
+  background:rgba(79,142,247,0.05);
+  color:var(--accent-bright);
+  border:1px solid rgba(79,142,247,0.25);
+  transition:all 0.25s;cursor:pointer;
+}
+.btn-outline:hover{
+  background:rgba(79,142,247,0.12);border-color:var(--accent);
+  box-shadow:0 0 20px rgba(79,142,247,0.2);transform:translateY(-2px);
+}
+
+/* ─── EDIT FAB ──────────────────────────────────────────────── */
+.edit-fab{
+  position:absolute;top:1rem;right:1rem;
+  width:2.5rem;height:2.5rem;
+  background:linear-gradient(135deg,#1d4ed8,#4f8ef7);
+  color:#fff;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;z-index:10;opacity:0.8;
+  box-shadow:0 4px 16px rgba(79,142,247,0.4);
+  transition:all 0.2s;
+}
+.edit-fab:hover{opacity:1;transform:scale(1.12) rotate(10deg);box-shadow:0 6px 24px rgba(79,142,247,0.6);}
+
+/* ─── MODALS ────────────────────────────────────────────────── */
+.modal-bg{
+  position:fixed;inset:0;z-index:60;
+  background:rgba(0,0,0,0.8);
+  backdrop-filter:blur(8px);
+  display:flex;align-items:center;justify-content:center;padding:16px;
+}
+.modal-content{
+  background:linear-gradient(145deg,#0a0f1e,#060b16);
+  border:1px solid rgba(79,142,247,0.15);
+  border-radius:20px;
+  box-shadow:0 40px 80px rgba(0,0,0,0.8),0 0 0 1px rgba(255,255,255,0.03);
+  max-height:90vh;overflow-y:auto;
+}
+
+/* ─── PRIVATE MODE ──────────────────────────────────────────── */
+#private-mode-btn{
+  display:flex;align-items:center;gap:6px;
+  padding:6px 14px;border-radius:8px;
+  font-size:13px;font-weight:600;
+  border:1px solid var(--border);
+  color:var(--text-secondary);background:transparent;cursor:pointer;
+  transition:all 0.25s;font-family:'Outfit',sans-serif;white-space:nowrap;
+}
+#private-mode-btn:hover{border-color:var(--accent-bright);color:var(--accent-bright);}
+#private-mode-btn.active{
+  border-color:var(--accent);color:#fff;
+  background:linear-gradient(135deg,#1d4ed8,#2563eb);
+  box-shadow:0 0 0 3px rgba(79,142,247,0.2),0 4px 16px rgba(79,142,247,0.3);
+  animation:privatePulse 3s ease-in-out infinite;
+}
+#private-mode-banner{
+  position:fixed;top:64px;left:0;right:0;z-index:49;
+  background:linear-gradient(90deg,transparent,rgba(79,142,247,0.12),rgba(79,142,247,0.18),rgba(79,142,247,0.12),transparent);
+  border-bottom:1px solid rgba(79,142,247,0.3);
+  backdrop-filter:blur(8px);padding:7px 16px;
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  font-size:11px;font-weight:700;color:#93c5fd;letter-spacing:0.1em;text-transform:uppercase;
+  animation:bannerSlideDown 0.3s cubic-bezier(0.22,1,0.36,1) both;
+}
+#private-mode-banner .pm-dot{
+  width:6px;height:6px;background:#60a5fa;border-radius:50%;flex-shrink:0;
+  animation:statusPulse 1.5s ease-in-out infinite;
+}
+body:not(.private-active) .pm-edit-control{display:none!important;}
+body:not(.private-active) .profile-upload-label{display:none!important;pointer-events:none;opacity:0;}
+body:not(.private-active) .pm-input-guard{pointer-events:none;opacity:0.4;filter:grayscale(0.5);}
+body.private-active .section.active{padding-top:calc(4rem + 30px);}
+
+/* ─── TO-DO ─────────────────────────────────────────────────── */
+.pri-high{background:rgba(239,68,68,0.15);color:#fca5a5;border:1px solid rgba(239,68,68,0.3);}
+.pri-medium{background:rgba(245,158,11,0.15);color:#fcd34d;border:1px solid rgba(245,158,11,0.3);}
+.pri-low{background:rgba(34,197,94,0.15);color:#86efac;border:1px solid rgba(34,197,94,0.3);}
+
+/* ─── STORAGE TABS ───────────────────────────────────────────── */
+.stab-btn{
+  cursor:pointer;padding:8px 20px;border-radius:10px;
+  font-weight:600;font-size:13px;transition:all 0.25s;letter-spacing:0.02em;
+}
+.stab-btn.active{
+  background:linear-gradient(135deg,rgba(29,78,216,0.5),rgba(79,142,247,0.3));
+  color:var(--accent-bright);
+  border:1px solid rgba(79,142,247,0.3);
+  box-shadow:0 4px 16px rgba(79,142,247,0.15);
+}
+.stab-btn:not(.active){
+  background:rgba(255,255,255,0.03);color:var(--text-secondary);
+  border:1px solid var(--border);
+}
+.stab-btn:not(.active):hover{border-color:rgba(79,142,247,0.2);color:var(--text-primary);}
+.stab-panel{display:none;}
+.stab-panel.active{display:block;}
+
+/* ─── SS TABLE ──────────────────────────────────────────────── */
+.ss-table{border-collapse:collapse;width:100%;}
+.ss-table td,.ss-table th{border:1px solid rgba(255,255,255,0.05);padding:6px 12px;min-width:110px;}
+.ss-table th{background:rgba(79,142,247,0.06);color:var(--accent-bright);font-size:12px;font-family:'Fraunces',serif;}
+.ss-table td input{background:transparent;color:var(--text-primary);outline:none;width:100%;font-size:12px;}
+
+/* ─── GALLERY ───────────────────────────────────────────────── */
+.gallery-img{width:100%;height:130px;object-fit:cover;border-radius:12px;cursor:pointer;transition:opacity .2s,transform .25s,box-shadow .25s;}
+.gallery-img:hover{opacity:.9;transform:scale(1.04);box-shadow:0 12px 32px rgba(0,0,0,0.6);}
+
+/* ─── IMAGE PREVIEW ─────────────────────────────────────────── */
+.img-preview-box{
+  width:100%;height:150px;
+  background:rgba(5,8,16,0.8);
+  border:2px dashed rgba(79,142,247,0.2);
+  border-radius:12px;display:flex;align-items:center;justify-content:center;
+  overflow:hidden;position:relative;transition:border-color 0.25s;
+}
+.img-preview-box:hover{border-color:var(--accent);}
+.img-preview-box img{width:100%;height:100%;object-fit:contain;}
+.img-preview-box .placeholder{color:var(--text-muted);font-size:.875rem;}
+.remove-img-btn{
+  position:absolute;top:5px;right:5px;
+  background:rgba(0,0,0,0.7);color:#fff;border-radius:50%;
+  width:24px;height:24px;display:flex;align-items:center;justify-content:center;
+  cursor:pointer;backdrop-filter:blur(4px);transition:background 0.2s;
+}
+.remove-img-btn:hover{background:#ef4444;}
+
+/* ─── SKILL EDITOR ──────────────────────────────────────────── */
+.skill-edit-row{display:flex;gap:8px;align-items:center;background:rgba(5,8,16,0.8);border:1px solid var(--border);border-radius:10px;padding:8px 12px;margin-bottom:6px;}
+.skill-edit-row input[type=text]{flex:1;background:transparent;color:var(--text-primary);font-size:13px;outline:none;border:none;}
+
+/* ─── CV PREVIEW ────────────────────────────────────────────── */
+#cv-preview{font-family:'Helvetica','Arial',sans-serif;color:#1e293b;background:#fff;}
+.cv-bullet{font-size:10px;line-height:1.7;color:#334155;padding-left:12px;position:relative;}
+.cv-bullet::before{content:'•';position:absolute;left:0;color:#1e293b;}
+
+/* ─── TOAST ─────────────────────────────────────────────────── */
+#toast-container{position:fixed;bottom:24px;right:24px;z-index:100;display:flex;flex-direction:column;gap:10px;}
+.toast{
+  background:linear-gradient(135deg,rgba(10,15,30,0.98),rgba(7,12,24,0.98));
+  border-left:3px solid var(--accent);
+  border:1px solid rgba(79,142,247,0.2);
+  border-left-width:3px;
+  padding:12px 20px;border-radius:12px;color:var(--text-primary);
+  box-shadow:0 16px 48px rgba(0,0,0,0.7),0 0 24px rgba(79,142,247,0.1);
+  animation:toastIn 0.4s cubic-bezier(0.22,1,0.36,1);
+  max-width:320px;font-size:13px;line-height:1.5;
+  backdrop-filter:blur(12px);
+}
+
+/* ─── CONTACT LINKS ─────────────────────────────────────────── */
+.contact-link{
+  padding:10px 20px;border-radius:10px;
+  border:1px solid var(--border);
+  color:var(--text-secondary);font-size:13px;font-weight:600;
+  transition:all 0.25s;
+}
+.contact-link:hover{
+  border-color:rgba(79,142,247,0.3);color:var(--accent-bright);
+  background:rgba(79,142,247,0.06);
+  transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,0.3);
+}
+
+/* ─── PROJECT CARD ──────────────────────────────────────────── */
+.project-card-img{
+  height:180px;position:relative;overflow:hidden;
+}
+.project-card-img::after{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(to bottom,transparent 40%,var(--bg-card));
+}
+
+/* ─── GLOWING DOT ───────────────────────────────────────────── */
+.glowing-dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:6px;background:var(--accent);}
+
+/* ─── HERO SCROLL HINT ──────────────────────────────────────── */
+.scroll-hint{
+  position:absolute;bottom:32px;left:50%;transform:translateX(-50%);
+  display:flex;flex-direction:column;align-items:center;gap:8px;
+  color:var(--text-muted);font-size:11px;letter-spacing:0.12em;text-transform:uppercase;
+  animation:bounceDown 2.5s ease-in-out infinite;
+}
+.scroll-hint-line{width:1px;height:48px;background:linear-gradient(var(--accent),transparent);}
+
+/* ─── SECTION STRIPE ────────────────────────────────────────── */
+.section-stripe{background:rgba(79,142,247,0.02);border-top:1px solid var(--border);border-bottom:1px solid var(--border);}
+
+/* ─── FOOTER ────────────────────────────────────────────────── */
+footer{
+  background:var(--bg-void);
+  border-top:1px solid var(--border);
+  padding:2rem 1rem;text-align:center;
+}
+footer p{color:var(--text-muted);font-size:12px;letter-spacing:0.04em;}
+
+/* ─── ANIMATIONS ────────────────────────────────────────────── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(28px);}to{opacity:1;transform:translateY(0);}}
+@keyframes toastIn{from{opacity:0;transform:translateX(20px);}to{opacity:1;transform:translateX(0);}}
+@keyframes orbFloat{0%,100%{transform:translate(0,0) scale(1);}33%{transform:translate(30px,-20px) scale(1.05);}66%{transform:translate(-20px,15px) scale(0.97);}}
+@keyframes spinRing{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
+@keyframes statusPulse{0%,100%{box-shadow:0 0 0 0 rgba(34,197,94,0.5);}50%{box-shadow:0 0 0 6px rgba(34,197,94,0);}}
+@keyframes privatePulse{0%,100%{box-shadow:0 0 0 0 rgba(79,142,247,0.5),0 4px 16px rgba(79,142,247,0.3);}50%{box-shadow:0 0 0 6px rgba(79,142,247,0),0 4px 24px rgba(79,142,247,0.5);}}
+@keyframes bannerSlideDown{from{opacity:0;transform:translateY(-100%);}to{opacity:1;transform:translateY(0);}}
+@keyframes bounceDown{0%,100%{transform:translateX(-50%) translateY(0);}50%{transform:translateX(-50%) translateY(6px);}}
+@keyframes gradShift{0%,100%{background-position:0% 50%;}50%{background-position:100% 50%;}}
+@keyframes glow{0%,100%{box-shadow:0 0 0 0 rgba(79,142,247,0.4);}50%{box-shadow:0 0 0 8px rgba(79,142,247,0);}}
+@keyframes float{0%,100%{transform:translateY(0);}50%{transform:translateY(-8px);}}
+@keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
+
+.fade-up{animation:fadeUp .7s cubic-bezier(0.22,1,0.36,1) both;}
+.fade-up-1{animation:fadeUp .7s cubic-bezier(0.22,1,0.36,1) 0.1s both;}
+.fade-up-2{animation:fadeUp .7s cubic-bezier(0.22,1,0.36,1) 0.22s both;}
+.fade-up-3{animation:fadeUp .7s cubic-bezier(0.22,1,0.36,1) 0.34s both;}
+.fade-up-4{animation:fadeUp .7s cubic-bezier(0.22,1,0.36,1) 0.46s both;}
+.float{animation:float 5s ease-in-out infinite;}
+
+/* ─── INPUTS ─────────────────────────────────────────────────── */
+.inp{
+  background:rgba(5,8,16,0.8);
+  border:1px solid rgba(255,255,255,0.07);
+  border-radius:12px;padding:10px 16px;
+  color:var(--text-primary);font-size:14px;
+  transition:border-color 0.25s,box-shadow 0.25s;
+  font-family:'Outfit',sans-serif;
+}
+.inp:focus{outline:none;border-color:rgba(79,142,247,0.4);box-shadow:0 0 0 3px rgba(79,142,247,0.1);}
+.inp::placeholder{color:var(--text-muted);}
+
+select.inp option{background:#0a0f1e;color:var(--text-primary);}
+
+/* Skill bar shimmer */
+.skill-bar-bg{height:3px;background:rgba(255,255,255,0.05);border-radius:2px;overflow:hidden;}
+.skill-bar-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--accent),var(--accent-bright),var(--accent));background-size:200% 100%;animation:shimmer 3s linear infinite;}
+</style>
+</head>
+<body>
+
+<!-- CURSOR -->
+<div id="cursor-dot"></div>
+<div id="cursor-ring"></div>
+
+<!-- ANIMATED BACKGROUND CANVAS -->
+<canvas id="bg-canvas"></canvas>
+
+<!-- NAVBAR -->
+<nav id="main-nav" class="fixed top-0 left-0 right-0 z-50">
+  <div class="max-w-6xl mx-auto px-5 flex items-center justify-between h-16">
+    <span class="nav-logo cursor-pointer flex items-center gap-3" onclick="showSection('portfolio')">
+      <img src="Images/logo.png.png" alt="Arun Lal Logo" class="h-10 w-auto rounded-full border border-white/10 shadow-sm" />
+      <span>
+        <span class="accent">Arun</span><span style="color:var(--text-primary)">Lal</span>
+        <span style="font-family:'Outfit',sans-serif;font-size:11px;color:var(--text-muted);font-weight:400;margin-left:6px;letter-spacing:0.04em;">CS Student</span>
+      </span>
+    </span>
+    <div class="hidden md:flex items-center gap-1">
+      <button onclick="showSection('portfolio')"  class="nav-btn active" id="nav-portfolio">Portfolio</button>
+      <button onclick="showSection('resume')"     class="nav-btn" id="nav-resume">Resume</button>
+      <button onclick="showSection('todo')"       class="nav-btn" id="nav-todo">To‑Do</button>
+      <button onclick="showSection('storage')"    class="nav-btn" id="nav-storage">Storage</button>
+      <button onclick="scrollToContact()" class="nav-cta ml-3">Contact</button>
+      <button id="private-mode-btn" onclick="togglePrivateMode()" title="Toggle Private Mode">
+        <span id="pm-icon">🔓</span>
+        <span id="pm-label">Unlock</span>
+      </button>
+    </div>
+    <div class="md:hidden flex items-center gap-3">
+      <button id="private-mode-btn-mobile" onclick="togglePrivateMode()" class="text-slate-400 hover:text-blue-400 text-lg"><span id="pm-icon-mobile">🔓</span></button>
+      <button onclick="toggleMobile()" style="color:var(--text-secondary)">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
+    </div>
+  </div>
+  <div id="mob-menu" class="hidden md:hidden px-5 pb-4 pt-2 flex flex-col gap-1" style="background:rgba(5,8,16,0.98);border-top:1px solid var(--border);">
+    <button onclick="showSection('portfolio');toggleMobile()" style="color:var(--text-secondary)" class="text-left hover:text-blue-400 py-2 text-sm transition">Portfolio</button>
+    <button onclick="showSection('resume');toggleMobile()"    style="color:var(--text-secondary)" class="text-left hover:text-blue-400 py-2 text-sm transition">Resume</button>
+    <button onclick="showSection('todo');toggleMobile()"      style="color:var(--text-secondary)" class="text-left hover:text-blue-400 py-2 text-sm transition">To‑Do</button>
+    <button onclick="showSection('storage');toggleMobile()"   style="color:var(--text-secondary)" class="text-left hover:text-blue-400 py-2 text-sm transition">Storage</button>
+    <button onclick="scrollToContact();toggleMobile()" style="color:var(--accent-bright)" class="text-left py-2 text-sm font-bold">Contact</button>
+  </div>
+</nav>
+
+<!-- PRIVATE MODE BANNER -->
+<div id="private-mode-banner" style="display:none;">
+  <span class="pm-dot"></span>
+  <span>Private Mode Active — All edit controls unlocked</span>
+  <span class="pm-dot"></span>
+</div>
+
+<!-- TOAST -->
+<div id="toast-container"></div>
+
+<!-- ═══════════════════════════════════════ PORTFOLIO ═════════════════════════════════════ -->
+<div id="section-portfolio" class="section active pt-16">
+
+  <!-- HERO -->
+  <section class="hero-section">
+    <div class="hero-orb orb-1"></div>
+    <div class="hero-orb orb-2"></div>
+    <div class="hero-orb orb-3"></div>
+    <div class="text-center max-w-3xl relative z-10">
+      <!-- Avatar -->
+      <div class="flex justify-center mb-8 fade-up">
+        <div class="avatar-wrap float">
+          <div class="avatar-ring-outer">
+            <div class="avatar-ring-inner">
+              <div class="avatar-img-wrap">
+                <svg id="default-avatar" class="w-32 h-32" fill="currentColor" viewBox="0 0 24 24" style="color:rgba(79,142,247,0.3);"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
+                <img id="profile-img-display" src="" class="w-full h-full object-cover hidden absolute inset-0" alt="Profile">
+              </div>
+            </div>
+          </div>
+          <label for="profile-upload-input" class="pm-edit-control profile-upload-label absolute bottom-0 right-0 rounded-full p-2.5 cursor-pointer z-10 transition" style="background:linear-gradient(135deg,#1d4ed8,#4f8ef7);box-shadow:0 4px 16px rgba(79,142,247,0.5);" title="Upload profile photo">
+            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+          </label>
+          <input type="file" id="profile-upload-input" class="hidden" accept="image/*" onchange="handleProfileImageUpload(event)">
+        </div>
+      </div>
+
+      <div class="flex items-center justify-center mb-4 fade-up-1">
+        <div class="status-badge">
+          <span class="status-pulse"></span>
+          Available for Opportunities
+        </div>
+      </div>
+
+      <h1 class="hero-title mb-4 fade-up-2">
+        <span class="word-accent">Arun</span><br>
+        <span style="color:var(--text-primary);">Lal</span>
+      </h1>
+
+      <p class="fade-up-3 mb-3" style="color:var(--accent-bright);font-size:15px;font-weight:600;letter-spacing:0.04em;">CS Student · Graphic Designer · Web Developer · Problem Solver</p>
+      <p class="fade-up-4 mb-8" style="color:var(--text-secondary);font-size:15px;max-width:580px;margin-left:auto;margin-right:auto;line-height:1.75;">I bridge the gap between design and code — from pixel-perfect UI to scalable full-stack apps. Freelancing on Fiverr | Active on GitHub &amp; LinkedIn.</p>
+
+      <div class="flex flex-wrap gap-3 justify-center fade-up-4">
+        <button onclick="scrollToContact()" class="btn-primary">Get In Touch</button>
+        <button onclick="showSection('resume')" class="btn-outline">View Resume</button>
+      </div>
+    </div>
+    <div class="scroll-hint">
+      <div class="scroll-hint-line"></div>
+      <span>Scroll</span>
+    </div>
+  </section>
+
+  <!-- ABOUT -->
+  <section class="section-stripe py-20">
+    <div class="max-w-6xl mx-auto px-5">
+      <div class="flex flex-col items-center mb-12">
+        <h2 class="section-heading text-4xl">About <span class="hl">Me</span><span class="heading-line"></span></h2>
+      </div>
+      <div class="max-w-4xl mx-auto">
+        <div class="card p-10 shadow-xl relative pm-protected" id="about-bio-container"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- EDUCATION -->
+  <section class="py-20">
+    <div class="max-w-6xl mx-auto px-5">
+      <h2 class="section-heading text-3xl mb-10">Education<span class="heading-line"></span></h2>
+      <div class="grid md:grid-cols-2 gap-6">
+        <div class="card p-6">
+          <div class="flex items-start gap-4">
+            <div class="w-14 h-14 rounded-2xl flex items-center justify-center font-bold text-xl flex-shrink-0" style="background:rgba(79,142,247,0.1);color:var(--accent-bright);font-family:'Fraunces',serif;border:1px solid rgba(79,142,247,0.15);">CS</div>
+            <div>
+              <h3 class="text-white font-bold text-lg mb-1">B.S. Computer Science</h3>
+              <p class="font-semibold text-sm mb-1" style="color:var(--accent-bright);">Sukkur IBA University</p>
+              <p class="text-sm" style="color:var(--text-muted);">2023 – Present · 4th Semester</p>
+            </div>
+          </div>
+        </div>
+        <div class="card p-6">
+          <div class="flex items-start gap-4">
+            <div class="w-14 h-14 rounded-2xl flex items-center justify-center font-bold text-xl flex-shrink-0" style="background:rgba(167,139,250,0.1);color:#a78bfa;font-family:'Fraunces',serif;border:1px solid rgba(167,139,250,0.15);">HS</div>
+            <div>
+              <h3 class="text-white font-bold text-lg mb-1">Higher Secondary (FSc)</h3>
+              <p class="font-semibold text-sm mb-1" style="color:#a78bfa;">Govt: Degree College Dhoronaro</p>
+              <p class="text-sm" style="color:var(--text-muted);">Completed 2023 · Science Group</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SKILLS -->
+  <section class="section-stripe py-20">
+    <div class="max-w-6xl mx-auto px-5">
+      <div class="flex items-center justify-between mb-10 flex-wrap gap-4">
+        <h2 class="section-heading text-3xl">Skills<span class="heading-line"></span></h2>
+        <button onclick="openSkillsModal()" class="pm-edit-control btn-outline text-sm py-2 px-4">✏️ Edit Skills</button>
+      </div>
+      <div class="grid md:grid-cols-2 gap-4" id="skills-display"></div>
+      <div class="flex flex-wrap gap-2 mt-10" id="skill-badges-display"></div>
+    </div>
+  </section>
+
+  <!-- PROJECTS -->
+  <section class="py-20">
+    <div class="max-w-6xl mx-auto px-5">
+      <div class="flex items-center justify-between mb-10">
+        <h2 class="section-heading text-3xl">Projects<span class="heading-line"></span></h2>
+        <button onclick="openProjectsModal()" class="pm-edit-control btn-outline text-sm py-2 px-4">✏️ Edit Projects</button>
+      </div>
+      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6" id="projects-container"></div>
+    </div>
+  </section>
+
+  <!-- CERTIFICATES -->
+  <section class="section-stripe py-20">
+    <div class="max-w-6xl mx-auto px-5">
+      <div class="flex items-center justify-between mb-10">
+        <h2 class="section-heading text-3xl">Certificates &amp; Achievements<span class="heading-line"></span></h2>
+        <button onclick="openCertificatesModal()" class="pm-edit-control btn-outline text-sm py-2 px-4">✏️ Edit</button>
+      </div>
+      <div class="grid md:grid-cols-2 gap-4" id="certificates-container"></div>
+    </div>
+  </section>
+
+  <!-- CONTACT -->
+  <section class="py-24" id="contact-section">
+    <div class="max-w-2xl mx-auto px-5 text-center">
+      <h2 class="section-heading text-4xl mb-4">Get In <span class="hl">Touch</span><span class="heading-line" style="margin:10px auto 0;"></span></h2>
+      <p class="mb-12" style="color:var(--text-secondary);font-size:15px;">Open for collaborations, freelance work, or just a friendly hello.</p>
+      <a href="https://wa.me/923123757809" target="_blank" class="inline-flex items-center gap-3 btn-primary mb-10 text-base" style="padding:14px 32px;border-radius:14px;font-size:16px;">
+        <svg width="22" height="22" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.52.151-.174.2-.298.3-.495.099-.198.05-.372-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.009-.371-.009-.57-.009-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413z"/></svg>
+        Chat on WhatsApp
+      </a>
+      <div class="flex flex-wrap gap-3 justify-center">
+        <a href="https://www.linkedin.com/in/arun-lal-b96803322" target="_blank" class="contact-link">LinkedIn</a>
+        <a href="https://github.com/arunlalmenghwar-cloud" target="_blank" class="contact-link">GitHub</a>
+        <a href="https://www.fiverr.com/s/vv05yoq" target="_blank" class="contact-link">Fiverr</a>
+        <a href="mailto:arunlalrathore@gmail.com" class="contact-link">Email Me</a>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <p>© 2026 Arun Lal · Built with passion &amp; code</p>
+  </footer>
+</div>
+
+<!-- ════════════════════════════ RESUME ════════════════════════════ -->
+<div id="section-resume" class="section pt-20 min-h-screen">
+  <div class="max-w-4xl mx-auto px-5 py-12">
+    <div class="flex items-center justify-between mb-8 flex-wrap gap-4">
+      <div>
+        <h2 class="section-heading text-3xl">Resume / CV<span class="heading-line"></span></h2>
+      </div>
+      <button onclick="downloadCV()" class="btn-primary text-sm py-2.5 px-6">↓ Download PDF</button>
+    </div>
+    <div class="bg-white text-slate-900 rounded-2xl shadow-2xl overflow-hidden" id="cv-preview" style="font-family:Georgia,serif;">
+      <div class="px-10 pt-8 pb-4">
+        <h1 class="text-4xl font-black tracking-tight mb-1" style="font-family:Arial,sans-serif;color:#111;">ARUN LAL</h1>
+        <p class="text-base font-bold tracking-widest mb-1" style="color:#222;font-family:Arial,sans-serif;">COMPUTER SCIENCE STUDENT</p>
+        <div class="w-full h-0.5 my-2" style="background:linear-gradient(90deg,#C9A84C,#f0c060,#C9A84C);"></div>
+        <p class="text-xs text-gray-500 mb-6">Sukkur, Sindh | +92 312 3757809 | arunlalrathore@gmail.com | linkedin.com/in/arun-lal | github.com/arunlalmenghwar</p>
+        <div class="mb-5">
+          <p class="text-xs font-black uppercase tracking-widest mb-1" style="color:#111;border-bottom:1.5px solid #C9A84C;padding-bottom:3px;">SUMMARY</p>
+          <p id="cv-summary-preview" class="text-xs leading-relaxed text-gray-700 text-justify">Loading summary...</p>
+        </div>
+        <div class="mb-5">
+          <div class="grid grid-cols-2 gap-6">
+            <div>
+              <p class="text-xs font-black uppercase tracking-widest mb-2" style="color:#111;border-bottom:1.5px solid #C9A84C;padding-bottom:3px;">PROFESSIONAL SKILLS</p>
+              <div id="resume-prof-skills" class="grid grid-cols-2 gap-x-2 gap-y-0.5 text-xs text-gray-700"></div>
+            </div>
+            <div>
+              <p class="text-xs font-black uppercase tracking-widest mb-2" style="color:#111;border-bottom:1.5px solid #C9A84C;padding-bottom:3px;">TECHNICAL SKILLS</p>
+              <div class="grid grid-cols-2 gap-x-2 gap-y-0.5 text-xs text-gray-700">
+                <span>Tailwind CSS</span><span>MySQL / DBMS</span><span>Git &amp; GitHub</span><span>REST APIs</span><span>Figma / UI Tools</span><span>Linux Basics</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="mb-5">
+          <p class="text-xs font-black uppercase tracking-widest mb-2" style="color:#111;border-bottom:1.5px solid #C9A84C;padding-bottom:3px;">PROFESSIONAL EXPERIENCE</p>
+          <div class="mb-3">
+            <div class="flex justify-between items-baseline"><span class="text-xs font-bold text-gray-900">Freelance Web Developer, Fiverr</span><span class="text-xs text-gray-400">2023 – Present</span></div>
+            <ul class="mt-1 space-y-0.5 text-xs text-gray-700"><li class="cv-bullet">Designed and built custom responsive websites for international clients with 5-star ratings.</li><li class="cv-bullet">Delivered pixel-perfect HTML, CSS, JavaScript, and React projects on time.</li></ul>
+          </div>
+          <div>
+            <div class="flex justify-between items-baseline"><span class="text-xs font-bold text-gray-900">Open Source Contributor, GitHub</span><span class="text-xs text-gray-400">2022 – Present</span></div>
+            <ul class="mt-1 space-y-0.5 text-xs text-gray-700"><li class="cv-bullet">Contributed to web tooling and UI component repositories.</li></ul>
+          </div>
+        </div>
+        <div class="mb-5">
+          <p class="text-xs font-black uppercase tracking-widest mb-2" style="color:#111;border-bottom:1.5px solid #C9A84C;padding-bottom:3px;">PROJECTS</p>
+          <div id="resume-projects-preview" class="space-y-2"></div>
+        </div>
+        <div class="mb-5">
+          <p class="text-xs font-black uppercase tracking-widest mb-2" style="color:#111;border-bottom:1.5px solid #C9A84C;padding-bottom:3px;">EDUCATION</p>
+          <div class="flex justify-between items-baseline mb-0.5"><span class="text-xs font-bold text-gray-900">Bachelor of Science in Computer Science</span><span class="text-xs text-gray-400">2023 – Present</span></div>
+          <p class="text-xs text-gray-500 italic mb-1">Sukkur, IBA University</p>
+          <p class="text-xs text-gray-700 cv-bullet">Relevant coursework: Data Structures, Algorithms, OOP, Web Development, DBMS, Operating Systems.</p>
+        </div>
+        <div>
+          <p class="text-xs font-black uppercase tracking-widest mb-2" style="color:#111;border-bottom:1.5px solid #C9A84C;padding-bottom:3px;">ADDITIONAL INFORMATION</p>
+          <ul class="space-y-0.5 text-xs text-gray-700">
+            <li class="cv-bullet"><strong>Languages:</strong> English, Urdu, Sindhi.</li>
+            <li class="cv-bullet" id="resume-certs-list"><strong>Certifications:</strong> Web Development Bootcamp (Udemy), C++ Problem Solving (HackerRank), Top Rated Freelancer (Fiverr).</li>
+            <li class="cv-bullet"><strong>Awards/Activities:</strong> Fiverr Top Rated Freelancer, GitHub contributor, competitive programming enthusiast.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════ TO-DO ════════════════════════════ -->
+<div id="section-todo" class="section pt-20 min-h-screen">
+  <div class="max-w-3xl mx-auto px-5 py-10">
+    <div class="flex flex-wrap items-center justify-between gap-4 mb-8">
+      <div>
+        <h2 class="section-heading text-3xl">Daily To‑Do<span class="heading-line"></span></h2>
+        <p class="text-sm mt-2" style="color:var(--text-muted);">Tasks saved per day · Private Mode Protected</p>
+      </div>
+      <div class="card px-5 py-3 text-center" style="min-width:90px;">
+        <p class="text-2xl font-bold" style="color:var(--accent-bright);font-family:'Fraunces',serif;" id="streak-count">0</p>
+        <p class="text-xs mt-1" style="color:var(--text-muted);">Day Streak 🔥</p>
+      </div>
+    </div>
+    <div id="todo-lock-screen" class="text-center py-24">
+      <div class="text-7xl mb-5 opacity-20">🔒</div>
+      <p class="mb-6" style="color:var(--text-secondary);">To‑Do is protected. Unlock Private Mode to access.</p>
+      <button onclick="togglePrivateMode()" class="btn-primary">🔓 Unlock Private Mode</button>
+    </div>
+    <div id="todo-content" class="hidden">
+      <div class="flex justify-end mb-4">
+        <button onclick="lockPrivateMode()" class="text-xs px-3 py-1.5 rounded-lg transition" style="color:#fca5a5;border:1px solid rgba(239,68,68,0.2);" onmouseover="this.style.background='rgba(239,68,68,0.1)'" onmouseout="this.style.background='transparent'">🔒 Lock Private Mode</button>
+      </div>
+      <div class="flex flex-wrap items-center gap-3 mb-6">
+        <button onclick="changeDay(-1)" class="p-2.5 rounded-xl transition" style="background:var(--bg-card);border:1px solid var(--border);color:var(--text-secondary);">‹</button>
+        <input type="date" id="todo-date" onchange="loadTodoDate()" class="inp"/>
+        <button onclick="changeDay(1)" class="p-2.5 rounded-xl transition" style="background:var(--bg-card);border:1px solid var(--border);color:var(--text-secondary);">›</button>
+        <button onclick="goToday()" class="px-3 py-2 rounded-lg text-xs font-bold transition" style="background:rgba(79,142,247,0.08);border:1px solid rgba(79,142,247,0.2);color:var(--accent-bright);">Today</button>
+        <span id="todo-day-label" class="text-sm" style="color:var(--text-secondary);"></span>
+      </div>
+      <div class="card p-4 mb-6">
+        <div class="flex flex-col sm:flex-row gap-3">
+          <input id="new-task-input" type="text" placeholder="Add a new task…" class="inp flex-1" onkeydown="if(event.key==='Enter')addTask()"/>
+          <select id="new-task-pri" class="inp">
+            <option value="medium">Medium</option>
+            <option value="high">High</option>
+            <option value="low">Low</option>
+          </select>
+          <button onclick="addTask()" class="btn-primary text-sm py-2 px-5 whitespace-nowrap">+ Add</button>
+        </div>
+      </div>
+      <div class="flex gap-4 mb-4 text-sm"><span id="stat-total" style="color:var(--text-secondary);"></span><span id="stat-done" style="color:var(--accent-bright);"></span><span id="stat-remaining" style="color:var(--text-muted);"></span></div>
+      <div id="task-list" class="space-y-2"></div>
+      <div id="task-empty" class="hidden text-center py-16" style="color:var(--text-muted);"><div class="text-5xl mb-3">📋</div><p class="font-semibold">No tasks for this day</p></div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════ STORAGE ════════════════════════════ -->
+<div id="section-storage" class="section pt-20 min-h-screen">
+  <div class="max-w-6xl mx-auto px-5 py-10">
+    <div class="mb-8 flex justify-between items-end">
+      <div>
+        <h2 class="section-heading text-3xl">Personal Storage<span class="heading-line"></span></h2>
+        <p class="text-sm mt-2" style="color:var(--text-muted);">Private notes, pictures, and tables</p>
+      </div>
+      <button onclick="exportAllData()" class="btn-primary text-sm animate-pulse">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+        Export All for GitHub
+      </button>
+    </div>
+    <div id="storage-lock-screen" class="text-center py-24">
+      <div class="text-7xl mb-5 opacity-20">🔒</div>
+      <p class="mb-6" style="color:var(--text-secondary);">Storage is protected. Unlock Private Mode to access.</p>
+      <button onclick="togglePrivateMode()" class="btn-primary">🔓 Unlock Private Mode</button>
+    </div>
+    <div id="storage-content" class="hidden">
+      <div class="flex justify-end mb-4">
+        <button onclick="lockPrivateMode()" class="text-xs px-3 py-1.5 rounded-lg transition" style="color:#fca5a5;border:1px solid rgba(239,68,68,0.2);" onmouseover="this.style.background='rgba(239,68,68,0.1)'" onmouseout="this.style.background='transparent'">🔒 Lock Private Mode</button>
+      </div>
+      <div class="card p-5 mb-8">
+        <div class="flex items-center justify-between mb-3"><span class="text-sm font-semibold" style="color:var(--text-secondary);">Storage Usage</span><span id="storage-label" class="text-sm" style="color:var(--text-muted);">Calculating…</span></div>
+        <div class="w-full rounded-full h-2" style="background:rgba(255,255,255,0.05);"><div id="storage-bar" class="h-2 rounded-full transition-all duration-700" style="width:0%;background:linear-gradient(90deg,var(--accent),var(--accent-bright))"></div></div>
+      </div>
+      <div class="flex gap-2 mb-6 flex-wrap items-center">
+        <button class="stab-btn active" onclick="switchStab('notes',this)">📝 Notes</button>
+        <button class="stab-btn"        onclick="switchStab('pictures',this)">🖼️ Pictures</button>
+        <button class="stab-btn"        onclick="switchStab('logo',this)">🏷️ Logo</button>
+        <button class="stab-btn"        onclick="switchStab('tables',this)">📊 Tables</button>
+        <label class="cursor-pointer btn-primary text-sm py-2 px-4 flex items-center gap-2">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+          Upload Logo
+          <input type="file" id="logo-upload-input" accept="image/*" class="hidden" onchange="uploadLogo(event)"/>
+        </label>
+      </div>
+
+      <!-- NOTES -->
+      <div id="stab-notes" class="stab-panel active">
+        <div class="flex flex-wrap gap-3 mb-5">
+          <input id="note-search" type="text" placeholder="Search notes…" oninput="renderNotes()" class="inp flex-1 min-w-40"/>
+          <button onclick="openNoteModal()" class="btn-primary text-sm py-2 px-5">+ New Note</button>
+        </div>
+        <div id="notes-grid" class="grid md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+        <div id="notes-empty" class="hidden text-center py-16" style="color:var(--text-muted);"><div class="text-5xl mb-3">📝</div><p>No notes yet</p></div>
+      </div>
+
+      <!-- PICTURES -->
+      <div id="stab-pictures" class="stab-panel">
+        <div class="flex flex-wrap gap-3 mb-5 items-center">
+          <label class="cursor-pointer btn-primary text-sm py-2 px-5">+ Upload Images <input type="file" multiple accept="image/*" class="hidden" onchange="uploadImages(event)"/></label>
+          <span class="text-xs" style="color:var(--text-muted);">Images stored as base64</span>
+        </div>
+        <div id="gallery-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3"></div>
+        <div id="gallery-empty" class="hidden text-center py-16" style="color:var(--text-muted);"><div class="text-5xl mb-3">🖼️</div><p>No pictures uploaded</p></div>
+      </div>
+
+      <!-- LOGO -->
+      <div id="stab-logo" class="stab-panel">
+        <div class="card p-10 flex flex-col items-center justify-center gap-6 text-center">
+          <h3 class="text-xl font-bold" style="color:var(--text-primary);">Your Logo</h3>
+          <p class="text-sm max-w-md" style="color:var(--text-secondary);">Upload a single image. For auto-use, place <strong>logo.png</strong> in your root folder.</p>
+          <div id="logo-preview-container" class="relative group">
+            <div id="logo-empty-state" class="img-preview-box w-64 h-64 flex flex-col items-center justify-center">
+              <svg class="w-12 h-12 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color:var(--text-muted);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+              <span class="text-sm" style="color:var(--text-muted);">No Logo Uploaded</span>
+            </div>
+            <img id="logo-display-img" src="" class="hidden w-64 h-64 object-contain rounded-xl border shadow-lg" style="background:rgba(7,12,24,0.5);border-color:var(--border);" alt="Logo"/>
+          </div>
+          <div class="flex gap-3">
+            <button id="logo-delete-btn" onclick="deleteLogo()" class="hidden btn-outline text-sm" style="color:#fca5a5;border-color:rgba(239,68,68,0.3);">Delete</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- TABLES -->
+      <div id="stab-tables" class="stab-panel">
+        <div class="flex flex-wrap gap-3 mb-5">
+          <input id="new-table-name" type="text" placeholder="Table name…" class="inp w-64"/>
+          <button onclick="createTable()" class="btn-primary text-sm py-2 px-5">+ Create</button>
+        </div>
+        <div id="table-tabs" class="flex flex-wrap gap-2 mb-4"></div>
+        <div id="table-area" class="card p-4 overflow-x-auto"></div>
+        <div id="tables-empty" class="hidden text-center py-16" style="color:var(--text-muted);"><div class="text-5xl mb-3">📊</div><p>No tables yet</p></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════ MODALS ════════════════ -->
+
+<!-- PASSWORD MODAL -->
+<div id="password-modal" class="hidden modal-bg">
+  <div class="modal-content w-full max-w-sm p-8 text-center" style="border-color:rgba(79,142,247,0.25);">
+    <div class="text-5xl mb-4">🔐</div>
+    <h3 class="text-xl font-bold mb-1" style="color:var(--text-primary);font-family:'Fraunces',serif;" id="password-title">Unlock Private Mode</h3>
+    <p class="text-xs mb-6" style="color:var(--text-muted);">Enter your password to enable editing</p>
+    <input type="password" id="password-input" placeholder="Password..." class="inp w-full mb-4 text-center tracking-widest text-lg" onkeydown="if(event.key==='Enter')submitPassword()"/>
+    <div id="password-error" class="text-xs mb-4 hidden font-bold" style="color:#fca5a5;">Incorrect password — try again</div>
+    <div class="flex gap-3">
+      <button onclick="closePasswordModal()" class="flex-1 py-2.5 rounded-xl font-semibold transition text-sm" style="background:rgba(255,255,255,0.04);color:var(--text-secondary);border:1px solid var(--border);">Cancel</button>
+      <button onclick="submitPassword()" class="flex-1 btn-primary py-2.5 text-sm justify-center">Unlock 🔓</button>
+    </div>
+  </div>
+</div>
+
+<!-- ABOUT MODAL -->
+<div id="about-modal" class="hidden modal-bg" onclick="closeAboutModal(event)">
+  <div class="modal-content w-full max-w-lg p-6" onclick="e=>e.stopPropagation()">
+    <h3 class="text-xl font-bold mb-1" style="color:var(--text-primary);font-family:'Fraunces',serif;">Edit About Info</h3>
+    <p class="text-xs mb-5" style="color:var(--text-muted);">Update your personal details</p>
+    <div class="space-y-4">
+      <div>
+        <label class="text-xs font-bold ml-1 mb-1 block" style="color:var(--text-muted);">About Me Description (Used for CV Summary)</label>
+        <textarea id="edit-bio" rows="6" class="inp w-full resize-none"></textarea>
+      </div>
+    </div>
+    <div class="flex gap-3 justify-end mt-6">
+      <button onclick="closeAboutModal()" class="px-4 py-2 text-sm transition" style="color:var(--text-muted);">Cancel</button>
+      <button onclick="saveAboutInfo()" class="btn-primary text-sm py-2 px-5">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- SKILLS MODAL -->
+<div id="skills-modal" class="hidden modal-bg" onclick="closeSkillsModal(event)">
+  <div class="modal-content w-full max-w-xl p-6" onclick="e=>e.stopPropagation()">
+    <h3 class="text-xl font-bold mb-1" style="color:var(--text-primary);font-family:'Fraunces',serif;">Edit Skills</h3>
+    <p class="text-xs mb-5" style="color:var(--text-muted);">Set proficiency levels for each skill</p>
+    <div id="skill-editor-list" class="space-y-2 mb-4"></div>
+    <button onclick="addSkillRow()" class="w-full py-2.5 rounded-xl text-sm transition mb-4" style="border:1px dashed rgba(79,142,247,0.25);color:var(--text-muted);" onmouseover="this.style.color='var(--accent-bright)'" onmouseout="this.style.color='var(--text-muted)'">+ Add Skill</button>
+    <div class="flex gap-3 justify-end">
+      <button onclick="closeSkillsModal()" class="px-4 py-2 text-sm" style="color:var(--text-muted);">Cancel</button>
+      <button onclick="saveSkillsFromModal()" class="btn-primary text-sm py-2 px-5">Save &amp; Update</button>
+    </div>
+  </div>
+</div>
+
+<!-- PROJECTS MODAL -->
+<div id="projects-modal" class="hidden modal-bg">
+  <div class="modal-content w-full max-w-2xl p-6">
+    <div class="flex justify-between items-center mb-6">
+      <h3 class="text-xl font-bold" style="color:var(--text-primary);font-family:'Fraunces',serif;">Edit Projects</h3>
+      <button onclick="closeProjectsModal()" style="color:var(--text-muted);" class="hover:text-white text-xl transition">✕</button>
+    </div>
+    <div id="projects-editor-list" class="space-y-6"></div>
+    <button onclick="addProjectRow()" class="w-full py-3 rounded-xl text-sm transition mt-4" style="border:1px dashed rgba(79,142,247,0.25);color:var(--text-muted);" onmouseover="this.style.color='var(--accent-bright)'" onmouseout="this.style.color='var(--text-muted)'">+ Add New Project</button>
+    <div class="flex justify-end mt-6"><button onclick="saveProjectsFromModal()" class="btn-primary text-sm py-2 px-6">Save All Projects</button></div>
+  </div>
+</div>
+
+<!-- CERTIFICATES MODAL -->
+<div id="certificates-modal" class="hidden modal-bg">
+  <div class="modal-content w-full max-w-2xl p-6">
+    <div class="flex justify-between items-center mb-6">
+      <h3 class="text-xl font-bold" style="color:var(--text-primary);font-family:'Fraunces',serif;">Edit Certificates</h3>
+      <button onclick="closeCertificatesModal()" style="color:var(--text-muted);" class="hover:text-white text-xl transition">✕</button>
+    </div>
+    <div id="certificates-editor-list" class="space-y-6"></div>
+    <button onclick="addCertificateRow()" class="w-full py-3 rounded-xl text-sm transition mt-4" style="border:1px dashed rgba(79,142,247,0.25);color:var(--text-muted);" onmouseover="this.style.color='var(--accent-bright)'" onmouseout="this.style.color='var(--text-muted)'">+ Add New Certificate</button>
+    <div class="flex justify-end mt-6"><button onclick="saveCertificatesFromModal()" class="btn-primary text-sm py-2 px-6">Save Certificates</button></div>
+  </div>
+</div>
+
+<!-- NOTE MODAL -->
+<div id="note-modal" class="hidden modal-bg" onclick="closeNoteModal(event)">
+  <div class="modal-content w-full max-w-lg p-6" onclick="e=>e.stopPropagation()">
+    <h3 class="text-lg font-bold mb-4" id="note-modal-title" style="color:var(--text-primary);font-family:'Fraunces',serif;">New Note</h3>
+    <input id="note-title-input" type="text" placeholder="Note title…" class="inp w-full mb-3"/>
+    <textarea id="note-content-input" rows="8" placeholder="Write your note here…" class="inp w-full mb-4 resize-none"></textarea>
+    <div class="flex gap-3 justify-end">
+      <button onclick="document.getElementById('note-modal').classList.add('hidden')" class="px-4 py-2 text-sm" style="color:var(--text-muted);">Cancel</button>
+      <button onclick="saveNote()" class="btn-primary text-sm py-2 px-5">Save Note</button>
+    </div>
+  </div>
+</div>
+
+<!-- LIGHTBOX -->
+<div id="lightbox" class="hidden modal-bg" onclick="closeLightbox()">
+  <img id="lightbox-img" src="" class="max-w-full max-h-[90vh] rounded-2xl shadow-2xl" style="box-shadow:0 40px 80px rgba(0,0,0,0.9)"/>
+</div>
+
+<!-- TASK EDIT MODAL -->
+<div id="task-modal" class="hidden modal-bg">
+  <div class="modal-content w-full max-w-md p-6">
+    <h3 class="text-lg font-bold mb-4" style="color:var(--text-primary);font-family:'Fraunces',serif;">Edit Task</h3>
+    <input id="edit-task-text" type="text" class="inp w-full mb-3"/>
+    <select id="edit-task-pri" class="inp w-full mb-4">
+      <option value="high">🔴 High Priority</option>
+      <option value="medium">🟡 Medium Priority</option>
+      <option value="low">🟢 Low Priority</option>
+    </select>
+    <div class="flex gap-3 justify-end">
+      <button onclick="closeTaskModal()" class="px-4 py-2 text-sm" style="color:var(--text-muted);">Cancel</button>
+      <button onclick="saveEditTask()" class="btn-primary text-sm py-2 px-5">Save</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════════════════
+   ANIMATED MESH BACKGROUND
+   ═══════════════════════════════════════════════════════════ */
+(function(){
+  const canvas = document.getElementById('bg-canvas');
+  const ctx = canvas.getContext('2d');
+  let W, H, nodes = [], frame = 0;
+  const N = 55, RADIUS = 160, COLORS = ['rgba(79,142,247,', 'rgba(167,139,250,', 'rgba(201,168,76,'];
+  function resize(){ W = canvas.width = innerWidth; H = canvas.height = innerHeight; }
+  function initNodes(){
+    nodes = [];
+    for(let i=0;i<N;i++) nodes.push({x:Math.random()*W,y:Math.random()*H,vx:(Math.random()-0.5)*0.3,vy:(Math.random()-0.5)*0.3,c:COLORS[Math.floor(Math.random()*COLORS.length)]});
+  }
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    for(let i=0;i<N;i++){
+      const a=nodes[i];
+      for(let j=i+1;j<N;j++){
+        const b=nodes[j];
+        const dx=a.x-b.x,dy=a.y-b.y,d=Math.sqrt(dx*dx+dy*dy);
+        if(d<RADIUS){
+          const op=(1-d/RADIUS)*0.12;
+          ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);
+          ctx.strokeStyle=a.c+op+')';ctx.lineWidth=0.8;ctx.stroke();
+        }
+      }
+    }
+    for(const n of nodes){
+      n.x+=n.vx;n.y+=n.vy;
+      if(n.x<0||n.x>W) n.vx*=-1;
+      if(n.y<0||n.y>H) n.vy*=-1;
+      ctx.beginPath();ctx.arc(n.x,n.y,1.5,0,Math.PI*2);
+      ctx.fillStyle=n.c+'0.35)';ctx.fill();
+    }
+    frame++;
+    requestAnimationFrame(draw);
+  }
+  resize();initNodes();draw();
+  window.addEventListener('resize',()=>{resize();initNodes();});
+})();
+
+/* ═══════════════════════════════════════════════════════════
+   CUSTOM CURSOR
+   ═══════════════════════════════════════════════════════════ */
+(function(){
+  const dot = document.getElementById('cursor-dot');
+  const ring = document.getElementById('cursor-ring');
+  let mx=0,my=0,rx=0,ry=0;
+  document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;dot.style.left=mx+'px';dot.style.top=my+'px';});
+  (function animRing(){rx+=(mx-rx)*0.12;ry+=(my-ry)*0.12;ring.style.left=rx+'px';ring.style.top=ry+'px';requestAnimationFrame(animRing);})();
+  document.querySelectorAll('a,button,label,[onclick],.card').forEach(el=>{
+    el.addEventListener('mouseenter',()=>document.body.classList.add('hovering'));
+    el.addEventListener('mouseleave',()=>document.body.classList.remove('hovering'));
+  });
+  document.addEventListener('mousedown',()=>document.body.classList.add('clicking'));
+  document.addEventListener('mouseup',()=>document.body.classList.remove('clicking'));
+  document.addEventListener('mouseleave',()=>{dot.style.opacity='0';ring.style.opacity='0';});
+  document.addEventListener('mouseenter',()=>{dot.style.opacity='1';ring.style.opacity='0.7';});
+})();
+
+/* ═══════════════════════════════════════════════════════════
+   NAVBAR SCROLL EFFECT
+   ═══════════════════════════════════════════════════════════ */
+window.addEventListener('scroll',()=>{
+  document.getElementById('main-nav').classList.toggle('scrolled',scrollY>30);
+},{passive:true});
+
+/* ═══════════════════════════════════════════════════════════
+   CARD MAGNETIC GLOW
+   ═══════════════════════════════════════════════════════════ */
+document.addEventListener('mousemove',e=>{
+  const cards = document.querySelectorAll('.card');
+  cards.forEach(card=>{
+    const rect = card.getBoundingClientRect();
+    const x = ((e.clientX-rect.left)/rect.width)*100;
+    const y = ((e.clientY-rect.top)/rect.height)*100;
+    card.style.setProperty('--mouse-x',x+'%');
+    card.style.setProperty('--mouse-y',y+'%');
+  });
+});
+
+/* ═══════════════════════════════════════════════════════════
+   SCROLL REVEAL
+   ═══════════════════════════════════════════════════════════ */
+function initScrollReveal(){
+  const els = document.querySelectorAll('.card,.section-heading,.contact-link');
+  const obs = new IntersectionObserver(entries=>{
+    entries.forEach(e=>{
+      if(e.isIntersecting){
+        e.target.style.animation='fadeUp 0.6s cubic-bezier(0.22,1,0.36,1) both';
+        obs.unobserve(e.target);
+      }
+    });
+  },{threshold:0.1});
+  els.forEach(el=>obs.observe(el));
+}
+
+/* ═══════════════════════════════════════════════════════════
+   PRIVATE MODE SYSTEM
+   ═══════════════════════════════════════════════════════════ */
+let privateModeActive = false;
+const PRIVATE_MODE_PASSWORD = "Ak2006";
+let pendingSection = null, pendingCallback = null, passwordContext = 'private';
+
+function activatePrivateMode(){
+  privateModeActive = true;
+  document.body.classList.add('private-active');
+  const btn = document.getElementById('private-mode-btn');
+  btn.classList.add('active');
+  document.getElementById('pm-icon').textContent='🔒';
+  document.getElementById('pm-label').textContent='Lock';
+  document.getElementById('pm-icon-mobile').textContent='🔒';
+  const banner = document.getElementById('private-mode-banner');
+  banner.style.display='flex';banner.style.animation='none';
+  banner.offsetHeight;banner.style.animation='bannerSlideDown 0.3s cubic-bezier(0.22,1,0.36,1) both';
+  if(pendingSection){const s=pendingSection;pendingSection=null;showSection(s);}
+  showToast('🔓 Private Mode Active — Edit controls unlocked');
+}
+function lockPrivateMode(){
+  privateModeActive=false;
+  document.body.classList.remove('private-active');
+  const btn=document.getElementById('private-mode-btn');
+  btn.classList.remove('active');
+  document.getElementById('pm-icon').textContent='🔓';
+  document.getElementById('pm-label').textContent='Unlock';
+  document.getElementById('pm-icon-mobile').textContent='🔓';
+  document.getElementById('private-mode-banner').style.display='none';
+  document.getElementById('todo-content').classList.add('hidden');
+  document.getElementById('todo-lock-screen').classList.remove('hidden');
+  document.getElementById('storage-content').classList.add('hidden');
+  document.getElementById('storage-lock-screen').classList.remove('hidden');
+  showToast('🔒 Private Mode Locked');
+}
+function togglePrivateMode(){privateModeActive?lockPrivateMode():openPasswordModal('private');}
+function requirePrivateMode(){if(privateModeActive)return true;showToast('🔒 Unlock Private Mode to edit');openPasswordModal('private');return false;}
+
+/* ═══════════════════════════════════════════════════════════
+   GLOBAL STATE & DEFAULTS
+   ═══════════════════════════════════════════════════════════ */
+const db={
+  about:{bio:"I'm Arun Lal, a 4th semester Computer Science student at Sukkur IBA University. I'm passionate about building clean digital experiences — from pixel-perfect UI designs to full-stack web applications. I freelance on Fiverr delivering 5-star web projects to international clients, and actively contribute to open-source on GitHub. I bridge the gap between design and code, bringing ideas to life with creativity and precision.",name:"Arun Lal",semester:"4th Semester",degree:"B.S. Computer Science"},
+  skills:[],projects:[],certificates:[],notes:[],tables:[],todo:{},images:{profile:null,logo:null}
+};
+const DEFAULT_SKILLS=[
+  {name:'HTML / CSS',level:'Expert',img:''},{name:'JavaScript',level:'Advanced',img:''},{name:'React.js',level:'Intermediate',img:''},
+  {name:'Python',level:'Advanced',img:''},{name:'C++',level:'Intermediate',img:''},{name:'Graphic Design',level:'Professional',img:''},
+  {name:'Node.js',level:'Beginner',img:''}
+];
+const DEFAULT_PROJECTS=[
+  {id:'p1',title:'Portfolio & Daily Hub',desc:'A fully-featured personal website with To-Do, Storage, and Resume sections.',tech:'HTML,CSS,JS,Tailwind',github:'https://github.com',color:'from-navy-900/50 to-slate-800',img:''},
+  {id:'p2',title:'E-Commerce UI',desc:'Clean modern e-commerce interface design with Figma and UI/UX best practices.',tech:'Figma,UI/UX',github:'#',color:'from-blue-900/50 to-slate-800',img:''},
+  {id:'p3',title:'Result System',desc:'Student management system with dashboard and grade computation.',tech:'PHP,MySQL',github:'https://github.com',color:'from-indigo-900/50 to-slate-800',img:''}
+];
+const DEFAULT_CERTIFICATES=[
+  {id:'c1',title:'Top Rated Freelancer',issuer:'Fiverr',date:'2023',img:''},
+  {id:'c2',title:'Web Development Bootcamp',issuer:'Udemy',date:'2022',img:''},
+  {id:'c3',title:'C++ Problem Solving',issuer:'HackerRank',date:'2023',img:''}
+];
+
+/* HELPERS */
+function escHtml(s){if(typeof s!=='string')return '';return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function generateId(){return Date.now().toString(36)+Math.random().toString(36).substr(2);}
+function showToast(msg){
+  const c=document.getElementById('toast-container');
+  const t=document.createElement('div');t.className='toast';t.innerText=msg;
+  c.appendChild(t);setTimeout(()=>{t.style.opacity='0';t.style.transition='opacity 0.4s';setTimeout(()=>t.remove(),400);},4500);
+}
+
+/* INIT */
+async function initApp(){
+  await loadAllData();migrateFromLocalStorage();
+  loadProfileImage();renderAboutSection();renderSkillsAll();
+  renderProjectsSection();renderCertificates();renderResumePreview();
+  showSection('portfolio');
+  document.getElementById('todo-date').value=todayStr();
+  setTimeout(initScrollReveal,500);
+}
+
+async function loadAllData(){
+  const files=[
+    {key:'about',url:'data/about.json',def:db.about},{key:'skills',url:'data/skills.json',def:DEFAULT_SKILLS},
+    {key:'projects',url:'data/projects.json',def:DEFAULT_PROJECTS},{key:'certificates',url:'data/certificates.json',def:DEFAULT_CERTIFICATES},
+    {key:'notes',url:'data/notes.json',def:[]},{key:'tables',url:'data/tables.json',def:[]},{key:'todo',url:'data/todo.json',def:{}}
+  ];
+  for(const file of files){
+    try{
+      if(location.protocol==='file:')throw new Error("Local file system");
+      const res=await fetch(file.url);if(!res.ok)throw new Error(`404 ${file.url}`);
+      db[file.key]=await res.json();
+    }catch(e){db[file.key]=JSON.parse(JSON.stringify(file.def));}
+  }
+  db.images.logo='Images/logo.png.png';db.images.profile='Images/profile.jpeg';
+}
+function migrateFromLocalStorage(){
+  const hasLS=localStorage.getItem('skills_v4');
+  if(hasLS&&db.skills.length===DEFAULT_SKILLS.length){
+    try{
+      db.skills=JSON.parse(localStorage.getItem('skills_v4'))||db.skills;
+      db.projects=JSON.parse(localStorage.getItem('projects_v2'))||db.projects;
+      db.certificates=JSON.parse(localStorage.getItem('certificates_v1'))||db.certificates;
+      db.notes=JSON.parse(localStorage.getItem('notes'))||db.notes;
+      db.tables=JSON.parse(localStorage.getItem('ss_tables'))||db.tables;
+      const aboutLS=localStorage.getItem('about_info_v2');if(aboutLS)db.about=JSON.parse(aboutLS);
+      const todoObj={};
+      for(let i=0;i<365;i++){const d=new Date();d.setDate(d.getDate()-i);const k=d.toISOString().slice(0,10);const t=localStorage.getItem('tasks_'+k);if(t)todoObj[k]=JSON.parse(t);}
+      db.todo=todoObj;
+      const pImg=localStorage.getItem('profile_image');if(pImg)db.images.profile=pImg;
+      const lImg=localStorage.getItem('logo_image');if(lImg)db.images.logo=lImg;
+      showToast("Migrated data from LocalStorage! Click 'Export All' to save.");
+    }catch(e){}
+  }
+}
+
+/* FILE HELPERS */
+function downloadFile(filename,content,mimeType){
+  const blob=new Blob([content],{type:mimeType});const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download=filename;
+  document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);
+}
+function isBase64(str){return typeof str==='string'&&str.startsWith('data:image');}
+async function saveData(key,filename){
+  const data=db[key];let cleanData=JSON.parse(JSON.stringify(data));let downloads=[];
+  const processImgField=(item,idx,folder,prefix)=>{
+    if(isBase64(item.img)){const ext=item.img.split(';')[0].split('/')[1]||'png';const fname=`${prefix}-${idx}-${Date.now()}.${ext}`;downloads.push({path:`images/${folder}/${fname}`,data:item.img});item.img=`images/${folder}/${fname}`;}
+  };
+  if(key==='skills')cleanData.forEach((item,i)=>processImgField(item,i,'skills','skill'));
+  else if(key==='projects')cleanData.forEach((item,i)=>processImgField(item,i,'projects','project'));
+  else if(key==='certificates')cleanData.forEach((item,i)=>processImgField(item,i,'certificates','cert'));
+  db[key]=cleanData;downloadFile(`data/${filename}`,JSON.stringify(cleanData,null,2),'application/json');
+  if(downloads.length>0){setTimeout(()=>{downloads.forEach(d=>{try{const bStr=atob(d.data.split(',')[1]);const u8=new Uint8Array(bStr.length);for(let i=0;i<bStr.length;i++)u8[i]=bStr.charCodeAt(i);const blob=new Blob([u8],{type:'image/jpeg'});downloadFile(d.path,blob,blob.type);}catch(e){}});},500);showToast(`Downloaded ${filename} + ${downloads.length} image(s). Upload to repo!`);}
+  else showToast(`Downloaded ${filename}. Upload to data/ folder in repo.`);
+}
+function exportAllData(){
+  const zip=new JSZip();
+  zip.file("data/about.json",JSON.stringify(db.about,null,2));zip.file("data/skills.json",JSON.stringify(db.skills,null,2));
+  zip.file("data/projects.json",JSON.stringify(db.projects,null,2));zip.file("data/certificates.json",JSON.stringify(db.certificates,null,2));
+  zip.file("data/notes.json",JSON.stringify(db.notes,null,2));zip.file("data/tables.json",JSON.stringify(db.tables,null,2));zip.file("data/todo.json",JSON.stringify(db.todo,null,2));
+  const addImgToZip=(b64,path)=>{if(!isBase64(b64))return;const ext=b64.split(';')[0].split('/')[1]||'png';const bData=atob(b64.split(',')[1]);const u8=new Uint8Array(bData.length);for(let j=0;j<bData.length;j++)u8[j]=bData.charCodeAt(j);zip.file(`${path}.${ext}`,u8);};
+  db.skills.forEach((item,i)=>addImgToZip(item.img,`images/skills/skill-${i}`));
+  db.projects.forEach((item,i)=>addImgToZip(item.img,`images/projects/project-${i}`));
+  db.certificates.forEach((item,i)=>addImgToZip(item.img,`images/certificates/cert-${i}`));
+  if(db.gallery)db.gallery.forEach((item,i)=>addImgToZip(item.data,`images/gallery/gallery-${i}`));
+  addImgToZip(db.images.profile,'images/profile/profile');addImgToZip(db.images.logo,'images/logo/logo');
+  zip.generateAsync({type:"blob"}).then(content=>{downloadFile("website-data.zip",content,"application/zip");showToast("✅ Exported All Data!");});
+}
+
+/* PASSWORD MODAL */
+function openPasswordModal(context){
+  passwordContext=context||'private';
+  document.getElementById('password-title').innerText='Unlock Private Mode';
+  document.getElementById('password-modal').classList.remove('hidden');
+  document.getElementById('password-input').value='';
+  document.getElementById('password-error').classList.add('hidden');
+  setTimeout(()=>document.getElementById('password-input').focus(),50);
+}
+function submitPassword(){
+  const input=document.getElementById('password-input').value;
+  if(input===PRIVATE_MODE_PASSWORD){
+    document.getElementById('password-modal').classList.add('hidden');
+    document.getElementById('password-input').value='';
+    document.getElementById('password-error').classList.add('hidden');
+    activatePrivateMode();if(pendingCallback){pendingCallback();pendingCallback=null;}
+  }else{document.getElementById('password-error').classList.remove('hidden');document.getElementById('password-input').select();}
+}
+function closePasswordModal(){document.getElementById('password-modal').classList.add('hidden');document.getElementById('password-input').value='';document.getElementById('password-error').classList.add('hidden');pendingCallback=null;pendingSection=null;}
+
+/* IMAGE HANDLING */
+function handleImageUpload(fileInput,callback){
+  if(fileInput.files&&fileInput.files[0]){
+    const file=fileInput.files[0];
+    if(!file.type.match('image.*')){alert('Please select a valid image file.');return;}
+    if(file.size>5*1024*1024){alert('Image too large. Max size is 5MB.');return;}
+    const reader=new FileReader();reader.onload=e=>callback(e.target.result);reader.readAsDataURL(file);
+  }
+}
+
+/* ABOUT */
+function renderAboutSection(){
+  const bioContainer=document.getElementById('about-bio-container');
+  const bioHtml=escHtml(db.about.bio).replace(/\n/g,'<br>');
+  bioContainer.innerHTML=`
+    <button onclick="openAboutModal()" class="edit-fab pm-edit-control" title="Edit Bio (Private Mode)">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+    </button>
+    <p class="leading-loose text-base md:text-lg md:text-justify" style="color:var(--text-secondary);">${bioHtml}</p>`;
+}
+function openAboutModal(){if(!requirePrivateMode())return;document.getElementById('edit-bio').value=db.about.bio||'';document.getElementById('about-modal').classList.remove('hidden');}
+function closeAboutModal(e){if(e&&e.target!==document.getElementById('about-modal'))return;document.getElementById('about-modal').classList.add('hidden');}
+function saveAboutInfo(){
+  db.about.bio=document.getElementById('edit-bio').value.trim()||db.about.bio;
+  saveData('about','about.json');renderAboutSection();renderResumePreview();document.getElementById('about-modal').classList.add('hidden');
+}
+
+/* PROFILE IMAGE */
+function loadProfileImage(){
+  const imgData=db.images.profile;const display=document.getElementById('profile-img-display');const def=document.getElementById('default-avatar');
+  if(imgData&&!isBase64(imgData)){display.src=imgData;display.classList.remove('hidden');def.classList.add('hidden');display.onerror=()=>{display.classList.add('hidden');def.classList.remove('hidden');};}
+  else if(imgData&&isBase64(imgData)){display.src=imgData;display.classList.remove('hidden');def.classList.add('hidden');}
+  else{display.classList.add('hidden');def.classList.remove('hidden');}
+}
+function handleProfileImageUpload(event){
+  if(!requirePrivateMode()){event.target.value='';return;}
+  handleImageUpload(event.target,(base64)=>{db.images.profile=base64;loadProfileImage();showToast("✅ Profile updated! Export to save.");});
+}
+
+/* SKILLS */
+function getLevelColor(level){
+  switch(level){
+    case'Beginner':return{c:'rgba(100,116,139,0.4)',t:'#94a3b8',bar:15};
+    case'Intermediate':return{c:'rgba(79,142,247,0.2)',t:'#60a5fa',bar:50};
+    case'Advanced':return{c:'rgba(79,142,247,0.3)',t:'#93c5fd',bar:75};
+    case'Expert':return{c:'rgba(79,142,247,0.4)',t:'#bfdbfe',bar:92};
+    case'Professional':return{c:'rgba(167,139,250,0.3)',t:'#c4b5fd',bar:88};
+    default:return{c:'rgba(100,116,139,0.2)',t:'#64748b',bar:30};
+  }
+}
+function renderSkillsAll(){
+  const skills=db.skills;
+  const sc=document.getElementById('skills-display');
+  if(sc) sc.innerHTML=skills.map(s=>{
+    const lc=getLevelColor(s.level);
+    return `<div class="card p-4 flex items-center gap-4">
+      ${s.img?`<img src="${s.img}" class="w-11 h-11 rounded-xl object-cover flex-shrink-0" style="border:1px solid var(--border);">`:''}
+      <div class="flex-1 min-w-0">
+        <div class="flex justify-between items-center mb-2">
+          <span class="text-sm font-semibold" style="color:var(--text-primary);">${escHtml(s.name)}</span>
+          <span class="level-badge text-xs" style="color:${lc.t};border-color:${lc.t};background:${lc.c};">${s.level}</span>
+        </div>
+        <div class="skill-bar-bg"><div class="skill-bar-fill" style="width:${lc.bar}%"></div></div>
+      </div>
+    </div>`;}).join('');
+
+  const bd=document.getElementById('skill-badges-display');
+  if(bd) bd.innerHTML=skills.map(s=>`
+    <span class="tech-tag matched flex items-center gap-2">
+      ${s.img?`<img src="${s.img}" class="w-4 h-4 rounded-full object-cover">`:''}${escHtml(s.name)}
+    </span>`).join('');
+
+  const rps=document.getElementById('resume-prof-skills');
+  if(rps){
+    const half=Math.ceil(skills.length/2);const left=skills.slice(0,half),right=skills.slice(half);
+    let html='';const maxLen=Math.max(left.length,right.length);
+    for(let i=0;i<maxLen;i++)html+=`<span>${left[i]?escHtml(left[i].name):''}</span><span>${right[i]?escHtml(right[i].name):''}</span>`;
+    rps.innerHTML=html;
+  }
+}
+
+let tempSkills=[];
+function openSkillsModal(){if(!requirePrivateMode())return;tempSkills=JSON.parse(JSON.stringify(db.skills));renderSkillEditor();document.getElementById('skills-modal').classList.remove('hidden');}
+function closeSkillsModal(e){if(e&&e.target!==document.getElementById('skills-modal'))return;document.getElementById('skills-modal').classList.add('hidden');}
+function renderSkillEditor(){
+  const list=document.getElementById('skill-editor-list');
+  list.innerHTML=tempSkills.map((s,i)=>`
+    <div class="card p-4">
+      <div class="flex gap-2 mb-3">
+        <input type="text" value="${escHtml(s.name)}" placeholder="Skill name" oninput="tempSkills[${i}].name=this.value" class="inp flex-1 text-sm"/>
+        <select onchange="tempSkills[${i}].level=this.value" class="inp text-xs font-bold" style="color:var(--accent-bright);">
+          <option value="Beginner" ${s.level==='Beginner'?'selected':''}>Beginner</option>
+          <option value="Intermediate" ${s.level==='Intermediate'?'selected':''}>Intermediate</option>
+          <option value="Advanced" ${s.level==='Advanced'?'selected':''}>Advanced</option>
+          <option value="Expert" ${s.level==='Expert'?'selected':''}>Expert</option>
+          <option value="Professional" ${s.level==='Professional'?'selected':''}>Professional</option>
+        </select>
+        <button onclick="tempSkills.splice(${i},1);renderSkillEditor()" style="color:#fca5a5;" class="hover:text-red-300 px-2 transition">✕</button>
+      </div>
+      <div class="img-preview-box">${s.img?`<img src="${s.img}"><div class="remove-img-btn" onclick="removeSkillImage(${i})">✕</div>`:'<span class="placeholder">Icon Image (Optional)</span>'}</div>
+      <input type="file" class="hidden" id="skill-img-${i}" accept="image/*" onchange="uploadSkillImage(event,${i})">
+      <button onclick="document.getElementById('skill-img-${i}').click()" class="w-full mt-2 text-xs py-1.5 rounded-lg transition" style="background:rgba(255,255,255,0.04);color:var(--text-secondary);">${s.img?'Change Image':'Upload Image'}</button>
+    </div>`).join('');
+}
+function addSkillRow(){tempSkills.push({name:'',level:'Intermediate',img:''});renderSkillEditor();}
+function uploadSkillImage(e,idx){handleImageUpload(e.target,(b)=>{tempSkills[idx].img=b;renderSkillEditor();});}
+function removeSkillImage(idx){tempSkills[idx].img='';renderSkillEditor();}
+function saveSkillsFromModal(){db.skills=tempSkills.filter(s=>s.name.trim());saveData('skills','skills.json');document.getElementById('skills-modal').classList.add('hidden');renderSkillsAll();}
+
+/* PROJECTS */
+function renderProjectsSection(){
+  const projects=db.projects;const pc=document.getElementById('projects-container');
+  const skillNames=db.skills.map(s=>s.name.toLowerCase());if(!pc)return;
+  pc.innerHTML=projects.map(p=>{
+    const techArr=p.tech?p.tech.split(',').map(t=>t.trim()):[];
+    const techHTML=techArr.map(t=>{const m=skillNames.some(sn=>sn.includes(t.toLowerCase()));return`<span class="tech-tag${m?' matched':''}">${t}</span>`;}).join('');
+    const bgStyle=p.img?`background-image:url('${p.img}');background-size:cover;background-position:center;`:'';
+    return `<div class="card overflow-hidden flex flex-col group">
+      <div class="project-card-img" style="${bgStyle}${!p.img?'background:linear-gradient(135deg,rgba(29,78,216,0.15),rgba(7,12,24,0.9));':''}">
+        ${!p.img?`<div class="absolute inset-0 flex items-center justify-center" style="font-size:3rem;opacity:0.08;font-family:'Fraunces',serif;font-weight:900;">{ }</div>`:''}
+      </div>
+      <div class="p-5 flex flex-col flex-1">
+        <h3 class="font-bold mb-2" style="color:var(--text-primary);font-family:'Fraunces',serif;">${p.title}</h3>
+        <p class="text-sm mb-3 flex-1 leading-relaxed" style="color:var(--text-secondary);">${p.desc}</p>
+        <div class="flex flex-wrap gap-1 mb-4">${techHTML}</div>
+        <div class="flex gap-3">
+          ${p.github&&p.github!=='#'?`<a href="${p.github}" target="_blank" class="flex-1 text-center py-2 text-xs font-bold rounded-lg transition contact-link">GitHub →</a>`:`<span class="flex-1 text-center py-2 text-xs italic" style="color:var(--text-muted);">Private Repo</span>`}
+        </div>
+      </div>
+    </div>`;}).join('');
+}
+
+let tempProjects=[];
+function openProjectsModal(){if(!requirePrivateMode())return;tempProjects=JSON.parse(JSON.stringify(db.projects));renderProjectEditor();document.getElementById('projects-modal').classList.remove('hidden');}
+function closeProjectsModal(){document.getElementById('projects-modal').classList.add('hidden');}
+function renderProjectEditor(){
+  const list=document.getElementById('projects-editor-list');
+  list.innerHTML=tempProjects.map((p,i)=>`
+    <div class="card p-4 relative" style="border-left:3px solid var(--accent);">
+      <button onclick="tempProjects.splice(${i},1);renderProjectEditor()" class="absolute top-2 right-2 transition" style="color:#fca5a5;" onmouseover="this.style.color='#f87171'" onmouseout="this.style.color='#fca5a5'">✕</button>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+        <input class="inp text-sm" placeholder="Project Title" value="${escHtml(p.title)}" oninput="tempProjects[${i}].title=this.value"/>
+        <input class="inp text-sm" placeholder="Color class" value="${escHtml(p.color)}" oninput="tempProjects[${i}].color=this.value"/>
+      </div>
+      <textarea class="inp w-full text-sm mb-3 resize-none" style="height:80px;" placeholder="Description" oninput="tempProjects[${i}].desc=this.value">${escHtml(p.desc)}</textarea>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+        <input class="inp text-sm" placeholder="Tech Stack (comma separated)" value="${escHtml(p.tech)}" oninput="tempProjects[${i}].tech=this.value"/>
+        <input class="inp text-sm" placeholder="GitHub Link" value="${escHtml(p.github)}" oninput="tempProjects[${i}].github=this.value"/>
+      </div>
+      <div class="img-preview-box h-32">${p.img?`<img src="${p.img}"><div class="remove-img-btn" onclick="removeProjectImage(${i})">✕</div>`:'<span class="placeholder">Project Featured Image</span>'}</div>
+      <input type="file" class="hidden" id="proj-img-${i}" accept="image/*" onchange="uploadProjectImage(event,${i})">
+      <button onclick="document.getElementById('proj-img-${i}').click()" class="w-full mt-2 text-xs py-1.5 rounded-lg transition" style="background:rgba(255,255,255,0.04);color:var(--text-secondary);">${p.img?'Change Image':'Upload Image'}</button>
+    </div>`).join('');
+}
+function addProjectRow(){tempProjects.push({id:generateId(),title:'',desc:'',tech:'',github:'',color:'',img:''});renderProjectEditor();}
+function uploadProjectImage(e,idx){handleImageUpload(e.target,(b)=>{tempProjects[idx].img=b;renderProjectEditor();});}
+function removeProjectImage(idx){tempProjects[idx].img='';renderProjectEditor();}
+function saveProjectsFromModal(){db.projects=tempProjects;saveData('projects','projects.json');closeProjectsModal();renderProjectsSection();renderResumePreview();}
+
+/* CERTIFICATES */
+function renderCertificates(){
+  const certs=db.certificates;const cc=document.getElementById('certificates-container');
+  if(cc) cc.innerHTML=certs.map(c=>`
+    <div class="card p-4 flex gap-4 items-center">
+      <div class="w-16 h-16 rounded-xl flex-shrink-0 overflow-hidden" style="border:1px solid var(--border);">
+        ${c.img?`<img src="${c.img}" class="w-full h-full object-cover">`:`<div class="w-full h-full flex items-center justify-center text-2xl" style="background:rgba(79,142,247,0.06);">🏆</div>`}
+      </div>
+      <div>
+        <h4 class="font-semibold text-sm mb-0.5" style="color:var(--text-primary);">${escHtml(c.title)}</h4>
+        <p class="text-xs font-bold mb-0.5" style="color:var(--accent-bright);">${escHtml(c.issuer)}</p>
+        <p class="text-xs" style="color:var(--text-muted);">${escHtml(c.date)}</p>
+      </div>
+    </div>`).join('');
+  const cl=document.getElementById('resume-certs-list');
+  if(cl){const certStr=certs.map(c=>`${c.title} (${c.issuer}, ${c.date})`).join('; ');cl.innerHTML=`<strong>Certifications:</strong> ${certStr}.`;}
+}
+
+let tempCertificates=[];
+function openCertificatesModal(){if(!requirePrivateMode())return;tempCertificates=JSON.parse(JSON.stringify(db.certificates));renderCertificatesEditor();document.getElementById('certificates-modal').classList.remove('hidden');}
+function closeCertificatesModal(){document.getElementById('certificates-modal').classList.add('hidden');}
+function renderCertificatesEditor(){
+  const list=document.getElementById('certificates-editor-list');
+  list.innerHTML=tempCertificates.map((c,i)=>`
+    <div class="card p-4 relative" style="border-left:3px solid var(--gold);">
+      <button onclick="tempCertificates.splice(${i},1);renderCertificatesEditor()" class="absolute top-2 right-2" style="color:#fca5a5;">✕</button>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
+        <input class="inp text-sm" placeholder="Title" value="${escHtml(c.title)}" oninput="tempCertificates[${i}].title=this.value"/>
+        <input class="inp text-sm" placeholder="Issuer" value="${escHtml(c.issuer)}" oninput="tempCertificates[${i}].issuer=this.value"/>
+        <input class="inp text-sm" placeholder="Date" value="${escHtml(c.date)}" oninput="tempCertificates[${i}].date=this.value"/>
+      </div>
+      <div class="img-preview-box h-40">${c.img?`<img src="${c.img}"><div class="remove-img-btn" onclick="removeCertificateImage(${i})">✕</div>`:'<span class="placeholder">Certificate Image</span>'}</div>
+      <input type="file" class="hidden" id="cert-img-${i}" accept="image/*" onchange="uploadCertificateImage(event,${i})">
+      <button onclick="document.getElementById('cert-img-${i}').click()" class="w-full mt-2 text-xs py-1.5 rounded-lg transition" style="background:rgba(255,255,255,0.04);color:var(--text-secondary);">${c.img?'Change Image':'Upload Image'}</button>
+    </div>`).join('');
+}
+function addCertificateRow(){tempCertificates.push({id:generateId(),title:'',issuer:'',date:'',img:''});renderCertificatesEditor();}
+function uploadCertificateImage(e,idx){handleImageUpload(e.target,(b)=>{tempCertificates[idx].img=b;renderCertificatesEditor();});}
+function removeCertificateImage(idx){tempCertificates[idx].img='';renderCertificatesEditor();}
+function saveCertificatesFromModal(){db.certificates=tempCertificates;saveData('certificates','certificates.json');closeCertificatesModal();renderCertificates();}
+
+/* NAVIGATION */
+const SECTIONS=['portfolio','resume','todo','storage'];
+function showSection(id){
+  if((id==='todo'||id==='storage')&&!privateModeActive){pendingSection=id;openPasswordModal('private');return;}
+  SECTIONS.forEach(s=>{document.getElementById('section-'+s).classList.remove('active');const n=document.getElementById('nav-'+s);if(n)n.classList.remove('active');});
+  document.getElementById('section-'+id).classList.add('active');
+  const nav=document.getElementById('nav-'+id);if(nav)nav.classList.add('active');
+  window.scrollTo(0,0);
+  if(id==='todo'){document.getElementById('todo-lock-screen').classList.add('hidden');document.getElementById('todo-content').classList.remove('hidden');initTodo();}
+  if(id==='storage'){document.getElementById('storage-lock-screen').classList.add('hidden');document.getElementById('storage-content').classList.remove('hidden');updateStorageBar();renderNotes();renderGallery();renderLogo();renderTableTabs();}
+  if(id==='resume'){renderSkillsAll();renderResumePreview();renderCertificates();}
+  setTimeout(initScrollReveal,200);
+}
+
+/* RESUME PREVIEW */
+function renderResumePreview(){
+  const s=document.getElementById('cv-summary-preview');
+  if(s) s.textContent=(db.about.bio||'').replace(/\n/g,' ')||'4th Semester CS student. Freelancer. Web Developer. Designer.';
+  const rp=document.getElementById('resume-projects-preview');
+  if(rp) rp.innerHTML=db.projects.slice(0,3).map(p=>`
+    <div>
+      <div class="flex justify-between items-baseline"><span class="text-xs font-bold text-gray-900">${escHtml(p.title)}</span><span class="text-xs text-gray-400">2024</span></div>
+      ${p.tech?`<p class="text-xs text-gray-500 italic mb-0.5">Tech: ${escHtml(p.tech)}</p>`:''}
+      <p class="cv-bullet text-xs text-gray-700">${escHtml(p.desc)}</p>
+    </div>`).join('');
+}
+
+/* DOWNLOAD CV */
+function downloadCV(){
+  const{jsPDF}=window.jspdf;const skills=db.skills,projects=db.projects,certs=db.certificates,about=db.about;
+  const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+  const W=210,ML=18,MR=18,usable=W-ML-MR,H=297;
+  const BLACK=[20,20,20],DARK=[45,45,45],GREY=[100,100,100],LGREY=[140,140,140],GOLD_D=[201,168,76];
+  const setColor=rgb=>doc.setTextColor(...rgb);
+  const LINE_H=5;let y=20;
+  function sectionHeading(title){if(y>H-30){doc.addPage();y=20;}doc.setFont('helvetica','bold');doc.setFontSize(10);setColor(BLACK);doc.text(title,ML,y);y+=3;doc.setDrawColor(...GOLD_D);doc.setLineWidth(0.8);doc.line(ML,y,W-MR,y);y+=5;}
+  function wrapText(text,indent){const lines=doc.splitTextToSize(text,usable-indent);lines.forEach(line=>{if(y>H-15){doc.addPage();y=20;}doc.text(line,ML+indent,y);y+=LINE_H;});}
+  doc.setFont('helvetica','bold');doc.setFontSize(28);setColor(BLACK);doc.text(about.name.toUpperCase(),ML,y);y+=9;
+  doc.setFont('helvetica','bold');doc.setFontSize(13);setColor(BLACK);doc.text('COMPUTER SCIENCE STUDENT',ML,y);y+=5;
+  doc.setDrawColor(...GOLD_D);doc.setLineWidth(1.5);doc.line(ML,y,W-MR,y);y+=4;
+  doc.setFont('helvetica','normal');doc.setFontSize(8.5);setColor(GREY);doc.text('Sukkur, Sindh  |  +92 312 3757809  |  arunlalrathore@gmail.com  |  linkedin.com/in/arun-lal  |  github.com/arunlalmenghwar',ML,y);y+=9;
+  sectionHeading('SUMMARY');doc.setFont('helvetica','normal');doc.setFontSize(9.5);setColor(DARK);wrapText((about.bio||'').replace(/\n/g,' '),0);y+=4;
+  sectionHeading('PROFESSIONAL SKILLS');const half=usable/2,midIdx=Math.ceil(skills.length/2);const leftSkills=skills.slice(0,midIdx),rightSkills=skills.slice(midIdx);
+  const sy=y;doc.setFont('helvetica','normal');doc.setFontSize(9.5);setColor(DARK);leftSkills.forEach((s,i)=>doc.text(s.name,ML,sy+i*LINE_H));rightSkills.forEach((s,i)=>doc.text(s.name,ML+half,sy+i*LINE_H));y=sy+Math.max(leftSkills.length,rightSkills.length)*LINE_H+4;
+  sectionHeading('TECHNICAL SKILLS');const tL=['Tailwind CSS','Git & GitHub','Figma / UI Tools'],tR=['MySQL / DBMS','REST APIs','Linux Basics'];const ty=y;tL.forEach((s,i)=>doc.text(s,ML,ty+i*LINE_H));tR.forEach((s,i)=>doc.text(s,ML+half,ty+i*LINE_H));y=ty+Math.max(tL.length,tR.length)*LINE_H+7;
+  sectionHeading('PROFESSIONAL EXPERIENCE');const exps=[{title:'Freelance Web Developer, Fiverr',date:'2023 – Present',bullets:['Designed and built custom responsive websites for international clients.','Delivered pixel-perfect HTML, CSS, JavaScript, and React projects with 5-star ratings.']},{title:'Open Source Contributor, GitHub',date:'2022 – Present',bullets:['Contributed to web tooling repositories using Git and pull requests.']}];
+  exps.forEach(exp=>{if(y>H-30){doc.addPage();y=20;}doc.setFont('helvetica','bold');doc.setFontSize(9.5);setColor(BLACK);doc.text(exp.title,ML,y);doc.setFont('helvetica','normal');doc.setFontSize(8.5);setColor(LGREY);doc.text(exp.date,W-MR,y,{align:'right'});y+=5;doc.setFont('helvetica','normal');doc.setFontSize(9.5);setColor(DARK);exp.bullets.forEach(b=>wrapText('• '+b,3));y+=3;});
+  sectionHeading('PROJECTS');projects.slice(0,4).forEach(p=>{if(y>H-30){doc.addPage();y=20;}doc.setFont('helvetica','bold');doc.setFontSize(9.5);setColor(BLACK);doc.text(p.title,ML,y);doc.setFont('helvetica','normal');doc.setFontSize(8.5);setColor(LGREY);doc.text('2024',W-MR,y,{align:'right'});y+=4;if(p.tech){doc.setFont('helvetica','oblique');doc.setFontSize(9);setColor(GREY);doc.text('Tech: '+p.tech,ML,y);y+=4.5;}doc.setFont('helvetica','normal');doc.setFontSize(9.5);setColor(DARK);wrapText('• '+p.desc,3);y+=2;});
+  if(y>H-40){doc.addPage();y=20;}sectionHeading('EDUCATION');doc.setFont('helvetica','bold');doc.setFontSize(9.5);setColor(BLACK);doc.text('Bachelor of Science in Computer Science',ML,y);doc.setFont('helvetica','normal');doc.setFontSize(8.5);setColor(LGREY);doc.text('2023 – Present',W-MR,y,{align:'right'});y+=4;doc.setFont('helvetica','oblique');doc.setFontSize(9);setColor(GREY);doc.text('Sukkur, IBA University',ML,y);y+=5;doc.setFont('helvetica','normal');doc.setFontSize(9.5);setColor(DARK);wrapText('• Relevant coursework: Data Structures, Algorithms, OOP, Web Development, DBMS, Operating Systems.',3);y+=5;
+  if(y>H-45){doc.addPage();y=20;}sectionHeading('ADDITIONAL INFORMATION');doc.setFont('helvetica','normal');doc.setFontSize(9.5);setColor(DARK);wrapText('• Languages: English, Urdu, Sindhi.',3);const certStr=certs.length?certs.map(c=>c.title+' ('+c.issuer+', '+c.date+')').join('; '):'Web Development Bootcamp (Udemy); C++ Problem Solving (HackerRank).';wrapText('• Certifications: '+certStr,3);wrapText('• Awards/Activities: Fiverr Top Rated Freelancer, GitHub open-source contributor, competitive programming enthusiast.',3);
+  doc.save('Arun_Lal_CV.pdf');
+}
+
+/* UTILITY */
+function scrollToContact(){showSection('portfolio');setTimeout(()=>document.getElementById('contact-section').scrollIntoView({behavior:'smooth'}),100);}
+function toggleMobile(){document.getElementById('mob-menu').classList.toggle('hidden');}
+
+/* TO-DO */
+let editingTaskId=null;
+function todayStr(){return new Date().toISOString().slice(0,10);}
+function initTodo(){const inp=document.getElementById('todo-date');if(!inp.value)inp.value=todayStr();loadTodoDate();updateStreak();}
+function loadTodoDate(){
+  const d=document.getElementById('todo-date').value;
+  const days=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const dt=new Date(d+'T12:00:00');
+  const label=d===todayStr()?'Today':days[dt.getDay()]+', '+dt.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+  document.getElementById('todo-day-label').textContent=label;renderTasks();
+}
+function goToday(){document.getElementById('todo-date').value=todayStr();loadTodoDate();}
+function changeDay(delta){const inp=document.getElementById('todo-date');const d=new Date(inp.value+'T12:00:00');d.setDate(d.getDate()+delta);inp.value=d.toISOString().slice(0,10);loadTodoDate();}
+function getTasks(date){return db.todo[date]||[];}
+function saveTasks(date,tasks){db.todo[date]=tasks;saveData('todo','todo.json');}
+function addTask(){
+  const inp=document.getElementById('new-task-input');const pri=document.getElementById('new-task-pri').value;
+  const text=inp.value.trim();if(!text)return;
+  const date=document.getElementById('todo-date').value;const tasks=getTasks(date);
+  tasks.push({id:Date.now()+'',text,done:false,priority:pri});
+  db.todo[date]=tasks;saveData('todo','todo.json');inp.value='';renderTasks();updateStreak();
+}
+function renderTasks(){
+  const date=document.getElementById('todo-date').value;const tasks=getTasks(date);
+  const list=document.getElementById('task-list');const empty=document.getElementById('task-empty');
+  if(!tasks.length){list.innerHTML='';empty.classList.remove('hidden');updateStats(0,0);return;}
+  empty.classList.add('hidden');
+  const priOrder={high:0,medium:1,low:2};
+  const sorted=[...tasks].sort((a,b)=>a.done===b.done?priOrder[a.priority]-priOrder[b.priority]:a.done-b.done);
+  list.innerHTML=sorted.map(t=>`
+    <div class="card p-4 flex items-center gap-3 transition" style="${t.done?'opacity:0.5':''}">
+      <input type="checkbox" ${t.done?'checked':''} onchange="toggleTask('${date}','${t.id}')" class="w-5 h-5 rounded cursor-pointer flex-shrink-0" style="accent-color:var(--accent);"/>
+      <div class="flex-1 min-w-0"><p class="text-sm font-medium truncate" style="color:${t.done?'var(--text-muted)':'var(--text-primary)'};${t.done?'text-decoration:line-through':''}">${escHtml(t.text)}</p></div>
+      <span class="text-xs px-2.5 py-0.5 rounded-full font-bold flex-shrink-0 pri-${t.priority}">${t.priority}</span>
+      <button onclick="openTaskModal('${date}','${t.id}')" class="transition flex-shrink-0 text-sm" style="color:var(--text-muted);" onmouseover="this.style.color='var(--accent-bright)'" onmouseout="this.style.color='var(--text-muted)'">✏️</button>
+      <button onclick="deleteTask('${date}','${t.id}')" class="transition flex-shrink-0 text-sm" style="color:var(--text-muted);" onmouseover="this.style.color='#fca5a5'" onmouseout="this.style.color='var(--text-muted)'">🗑️</button>
+    </div>`).join('');
+  updateStats(tasks.length,tasks.filter(t=>t.done).length);
+}
+function updateStats(total,done){
+  document.getElementById('stat-total').textContent=`${total} task${total!==1?'s':''}`;
+  document.getElementById('stat-done').textContent=done?`✓ ${done} done`:'';
+  document.getElementById('stat-remaining').textContent=(total-done)?`${total-done} remaining`:'';
+}
+function toggleTask(date,id){const tasks=getTasks(date);const t=tasks.find(t=>t.id===id);if(t)t.done=!t.done;db.todo[date]=tasks;saveData('todo','todo.json');renderTasks();updateStreak();}
+function deleteTask(date,id){saveTasks(date,getTasks(date).filter(t=>t.id!==id));renderTasks();updateStreak();}
+function openTaskModal(date,id){const tasks=getTasks(date);const t=tasks.find(t=>t.id===id);if(!t)return;editingTaskId={date,id};document.getElementById('edit-task-text').value=t.text;document.getElementById('edit-task-pri').value=t.priority;document.getElementById('task-modal').classList.remove('hidden');}
+function closeTaskModal(){editingTaskId=null;document.getElementById('task-modal').classList.add('hidden');}
+function saveEditTask(){if(!editingTaskId)return;const{date,id}=editingTaskId;const tasks=getTasks(date);const t=tasks.find(t=>t.id===id);if(t){t.text=document.getElementById('edit-task-text').value.trim()||t.text;t.priority=document.getElementById('edit-task-pri').value;}db.todo[date]=tasks;saveData('todo','todo.json');closeTaskModal();renderTasks();}
+function updateStreak(){let streak=0,d=new Date();for(let i=0;i<365;i++){const key=d.toISOString().slice(0,10);const tasks=getTasks(key);if(tasks.some(t=>t.done)){streak++;d.setDate(d.getDate()-1);}else{if(i===0){d.setDate(d.getDate()-1);continue;}break;}}document.getElementById('streak-count').textContent=streak;}
+
+/* STORAGE */
+function updateStorageBar(){const used=JSON.stringify(db).length/1024;const pct=Math.min((used/200)*100,100);document.getElementById('storage-bar').style.width=pct+'%';document.getElementById('storage-label').textContent=`Data Size: ${used.toFixed(1)} KB`;}
+let editingNoteId=null;
+function openNoteModal(id){editingNoteId=id||null;const note=id?db.notes.find(n=>n.id===id):null;document.getElementById('note-modal-title').textContent=id?'Edit Note':'New Note';document.getElementById('note-title-input').value=note?note.title:'';document.getElementById('note-content-input').value=note?note.content:'';document.getElementById('note-modal').classList.remove('hidden');}
+function closeNoteModal(e){if(e&&e.target!==document.getElementById('note-modal'))return;document.getElementById('note-modal').classList.add('hidden');}
+function saveNote(){
+  const title=document.getElementById('note-title-input').value.trim()||'Untitled';const content=document.getElementById('note-content-input').value.trim();
+  if(editingNoteId){const n=db.notes.find(n=>n.id===editingNoteId);if(n){n.title=title;n.content=content;n.updated=Date.now();}}
+  else db.notes.unshift({id:Date.now()+'',title,content,created:Date.now(),updated:Date.now()});
+  saveData('notes','notes.json');document.getElementById('note-modal').classList.add('hidden');renderNotes();
+}
+function deleteNote(id){if(!confirm('Delete this note?'))return;db.notes=db.notes.filter(n=>n.id!==id);saveData('notes','notes.json');renderNotes();}
+function renderNotes(){
+  const q=document.getElementById('note-search').value.toLowerCase();
+  const notes=db.notes.filter(n=>n.title.toLowerCase().includes(q)||n.content.toLowerCase().includes(q));
+  const grid=document.getElementById('notes-grid');const empty=document.getElementById('notes-empty');
+  if(!notes.length){grid.innerHTML='';empty.classList.remove('hidden');return;}empty.classList.add('hidden');
+  grid.innerHTML=notes.map(n=>`
+    <div class="card p-5 flex flex-col gap-2">
+      <div class="flex items-start justify-between gap-2">
+        <h4 class="font-semibold text-sm flex-1" style="color:var(--text-primary);">${escHtml(n.title)}</h4>
+        <div class="flex gap-1 flex-shrink-0">
+          <button onclick="openNoteModal('${n.id}')" class="text-xs transition" style="color:var(--text-muted);" onmouseover="this.style.color='var(--accent-bright)'" onmouseout="this.style.color='var(--text-muted)'">✏️</button>
+          <button onclick="deleteNote('${n.id}')" class="text-xs transition" style="color:var(--text-muted);" onmouseover="this.style.color='#fca5a5'" onmouseout="this.style.color='var(--text-muted)'">🗑️</button>
+        </div>
+      </div>
+      <p class="text-xs leading-relaxed" style="color:var(--text-muted);display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden;">${escHtml(n.content)||'<em>Empty note</em>'}</p>
+      <p class="text-xs mt-auto" style="color:rgba(61,79,110,0.7);">${new Date(n.updated).toLocaleDateString()}</p>
+    </div>`).join('');
+}
+function uploadImages(e){const files=Array.from(e.target.files);if(!files.length)return;files.forEach(f=>{const reader=new FileReader();reader.onload=ev=>{if(!db.gallery)db.gallery=[];db.gallery.push({id:Date.now()+'_'+Math.random(),name:f.name,data:ev.target.result});renderGallery();};reader.readAsDataURL(f);});e.target.value='';}
+function deletePic(id){db.gallery=db.gallery.filter(p=>p.id!==id);saveData('gallery','gallery.json');renderGallery();}
+function renderGallery(){const pics=db.gallery||[];const grid=document.getElementById('gallery-grid');const empty=document.getElementById('gallery-empty');if(!pics.length){grid.innerHTML='';empty.classList.remove('hidden');return;}empty.classList.add('hidden');grid.innerHTML=pics.map(p=>`<div class="relative group"><img src="${p.data}" alt="${escHtml(p.name)}" class="gallery-img" onclick="openLightbox('${p.id}')"/><button onclick="deletePic('${p.id}')" class="absolute top-1 right-1 text-white text-xs rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition" style="background:#ef4444;">✕</button><p class="text-xs mt-1 truncate" style="color:var(--text-muted);">${escHtml(p.name)}</p></div>`).join('');}
+function openLightbox(id){const pic=(db.gallery||[]).find(p=>p.id===id);if(!pic)return;document.getElementById('lightbox-img').src=pic.data;document.getElementById('lightbox').classList.remove('hidden');}
+function closeLightbox(){document.getElementById('lightbox').classList.add('hidden');}
+function uploadLogo(event){handleImageUpload(event.target,(base64)=>{db.images.logo=base64;renderLogo();document.getElementById('logo-upload-input').value='';showToast("✅ Logo updated! Export to save.");});}
+function deleteLogo(){if(!confirm('Delete your logo?'))return;db.images.logo=null;renderLogo();}
+function renderLogo(){const logoData=db.images.logo;const emptyState=document.getElementById('logo-empty-state');const displayImg=document.getElementById('logo-display-img');const deleteBtn=document.getElementById('logo-delete-btn');const btnText=document.getElementById('logo-btn-text');if(logoData&&isBase64(logoData)){displayImg.src=logoData;displayImg.classList.remove('hidden');emptyState.classList.add('hidden');deleteBtn.classList.remove('hidden');btnText.textContent='Replace Logo';}else if(logoData){displayImg.src=logoData;displayImg.onerror=function(){displayImg.classList.add('hidden');emptyState.classList.remove('hidden');deleteBtn.classList.add('hidden');btnText.textContent='Upload Logo';};displayImg.onload=function(){displayImg.classList.remove('hidden');emptyState.classList.add('hidden');deleteBtn.classList.add('hidden');btnText.textContent='Replace Logo';};}else{displayImg.classList.add('hidden');emptyState.classList.remove('hidden');deleteBtn.classList.add('hidden');btnText.textContent='Upload Logo';}}
+
+/* TABLES */
+let activeTableId=null;
+function createTable(){const name=document.getElementById('new-table-name').value.trim();if(!name)return;const id=Date.now()+'';db.tables.push({id,name,rows:[['Column A','Column B','Column C'],['','','']]});saveData('tables','tables.json');document.getElementById('new-table-name').value='';activeTableId=id;renderTableTabs();}
+function deleteTable(id){if(!confirm('Delete this table?'))return;db.tables=db.tables.filter(t=>t.id!==id);saveData('tables','tables.json');if(activeTableId===id)activeTableId=db.tables.length?db.tables[0].id:null;renderTableTabs();}
+function renderTableTabs(){const tables=db.tables;const tabs=document.getElementById('table-tabs');const area=document.getElementById('table-area');const empty=document.getElementById('tables-empty');if(!tables.length){tabs.innerHTML='';area.innerHTML='';empty.classList.remove('hidden');return;}empty.classList.add('hidden');if(!activeTableId||!tables.find(t=>t.id===activeTableId))activeTableId=tables[0].id;tabs.innerHTML=tables.map(t=>`<div class="flex items-center gap-1"><button onclick="activeTableId='${t.id}';renderTableTabs()" class="stab-btn ${activeTableId===t.id?'active':''}">${escHtml(t.name)}</button><button onclick="deleteTable('${t.id}')" class="transition text-xs" style="color:var(--text-muted);" onmouseover="this.style.color='#fca5a5'" onmouseout="this.style.color='var(--text-muted)'">✕</button></div>`).join('');renderSpreadsheet();}
+function renderSpreadsheet(){const tbl=db.tables.find(t=>t.id===activeTableId);const area=document.getElementById('table-area');if(!tbl){area.innerHTML='';return;}const rows=tbl.rows;let html=`<table class="ss-table mb-4"><thead><tr><th style="color:var(--text-muted);font-size:11px;width:28px">#</th>${rows[0].map((c,ci)=>`<th><input value="${escHtml(c)}" onchange="updateCell('${tbl.id}',0,${ci},this.value)" style="background:transparent;color:var(--accent-bright);outline:none;width:100%;font-weight:700;font-size:12px;font-family:'Outfit',sans-serif"/></th>`).join('')}<th><button onclick="addCol('${tbl.id}')" style="color:var(--accent);" class="hover:text-blue-300 transition text-base">+</button></th></tr></thead><tbody>`;for(let ri=1;ri<rows.length;ri++){html+=`<tr><td style="color:var(--text-muted);font-size:11px;text-align:center">${ri}</td>`;for(let ci=0;ci<rows[ri].length;ci++)html+=`<td><input value="${escHtml(rows[ri][ci])}" onchange="updateCell('${tbl.id}',${ri},${ci},this.value)" style="background:transparent;color:var(--text-primary);outline:none;width:100%;font-size:12px;font-family:'Outfit',sans-serif"/></td>`;html+=`<td><button onclick="removeRow('${tbl.id}',${ri})" style="color:var(--text-muted);" class="hover:text-red-400 transition text-sm">✕</button></td></tr>`;}html+=`</tbody></table><div class="flex gap-2"><button onclick="addRow('${tbl.id}')" class="px-3 py-1.5 text-xs rounded-lg transition" style="background:rgba(255,255,255,0.04);color:var(--text-secondary);">+ Add Row</button><button onclick="removeLastCol('${tbl.id}')" class="px-3 py-1.5 text-xs rounded-lg transition" style="background:rgba(255,255,255,0.04);color:var(--text-secondary);">− Remove Last Col</button></div>`;area.innerHTML=html;}
+function updateCell(id,ri,ci,val){const tbl=db.tables.find(t=>t.id===id);if(tbl){while(tbl.rows[ri].length<=ci)tbl.rows[ri].push('');tbl.rows[ri][ci]=val;}saveData('tables','tables.json');}
+function addRow(id){const tbl=db.tables.find(t=>t.id===id);if(tbl)tbl.rows.push(new Array(tbl.rows[0].length).fill(''));saveData('tables','tables.json');renderSpreadsheet();}
+function removeRow(id,ri){const tbl=db.tables.find(t=>t.id===id);if(tbl&&tbl.rows.length>2)tbl.rows.splice(ri,1);saveData('tables','tables.json');renderSpreadsheet();}
+function addCol(id){const tbl=db.tables.find(t=>t.id===id);if(tbl)tbl.rows.forEach((r,i)=>r.push(i===0?'Column '+String.fromCharCode(65+r.length):''));saveData('tables','tables.json');renderSpreadsheet();}
+function removeLastCol(id){const tbl=db.tables.find(t=>t.id===id);if(tbl&&tbl.rows[0].length>1)tbl.rows.forEach(r=>r.pop());saveData('tables','tables.json');renderSpreadsheet();}
+function switchStab(id,btn){document.querySelectorAll('.stab-panel').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.stab-btn').forEach(b=>b.classList.remove('active'));document.getElementById('stab-'+id).classList.add('active');btn.classList.add('active');}
+
+/* BOOT */
+document.addEventListener('DOMContentLoaded',()=>{
+  initApp();
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(!document.getElementById('password-modal').classList.contains('hidden'))closePasswordModal();}});
+});
+</script>
+</body>
+</html>
